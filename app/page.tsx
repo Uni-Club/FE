@@ -22,9 +22,7 @@ export default function LandingPage() {
             <a href="#benefits" className="text-slate-600 hover:text-slate-900 transition-colors">
               장점
             </a>
-            <a href="#pricing" className="text-slate-600 hover:text-slate-900 transition-colors">
-              요금제
-            </a>
+
           </nav>
           <div className="flex items-center gap-3">
             <Link href="/login">
