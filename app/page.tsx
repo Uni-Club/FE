@@ -73,6 +73,7 @@ export default function LandingPage() {
               모든 활동을 체계적으로 관리하세요
             </p>
             
+            
             <div className="flex justify-center">
               <Button asChild size="lg" className="bg-indigo-600 text-white hover:bg-indigo-700 px-8">
                 <Link href="/search">
@@ -209,32 +210,7 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-indigo-600">
-        <div className="container mx-auto px-6">
-          <div className="text-center max-w-3xl mx-auto">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              지금 시작하세요
-            </h2>
-            <p className="text-lg text-indigo-100 mb-8">
-              수많은 대학 동아리가 UNICLUB과 함께 성장하고 있습니다.
-              여러분의 동아리도 함께 하세요.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button asChild size="lg" className="bg-white text-indigo-600 hover:bg-gray-100 font-semibold px-8">
-                <Link href="/login">
-                  로그인하기
-                </Link>
-              </Button>
-              <Button asChild size="lg" className="bg-indigo-700 text-white hover:bg-indigo-800 font-semibold px-8">
-                <Link href="/signup">
-                  지금 가입하기
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+
 
       {/* Footer */}
       <footer className="bg-gray-900 text-gray-400 py-12">
