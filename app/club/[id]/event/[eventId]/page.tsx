@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { ArrowLeft, Calendar, MapPin, Clock, Users } from "lucide-react"
 import AttendanceSection from "@/components/attendance-section"
 import CheckInSection from "@/components/check-in-section"
+import SiteHeader from "@/components/site-header"
 
 export default async function EventPage({ params }: { params: { id: string; eventId: string } }) {
   const user = await getCurrentUser()
@@ -51,17 +52,9 @@ export default async function EventPage({ params }: { params: { id: string; even
 
   return (
     <div className="min-h-screen bg-slate-50">
-      <header className="bg-white border-b border-slate-200">
-        <div className="container mx-auto px-4 py-4">
-          <Link
-            href={`/club/${params.id}`}
-            className="inline-flex items-center gap-2 text-slate-600 hover:text-slate-900"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span>동아리로 돌아가기</span>
-          </Link>
-        </div>
-      </header>
+      <div className="sticky top-0 z-50">
+        <SiteHeader showBack backHref={`/club/${params.id}`} />
+      </div>
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
         <div className="space-y-6">

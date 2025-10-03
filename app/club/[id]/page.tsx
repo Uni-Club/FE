@@ -3,6 +3,8 @@
 import { useParams, useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import SiteHeader from '@/components/site-header';
 import { groupAPI, recruitmentAPI } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
@@ -119,55 +121,7 @@ export default function ClubDetailPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 헤더 */}
-      <header className="bg-white border-b border-gray-200">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => router.push('/search')}
-                className="text-gray-600 hover:text-gray-900"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <Link href="/" className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold">U</span>
-                </div>
-                <span className="text-xl font-bold text-gray-900">UNICLUB</span>
-              </Link>
-            </div>
-            <div className="flex items-center gap-3">
-              {user ? (
-                <>
-                  <Link href="/member" className="flex items-center gap-2 text-gray-700 hover:text-gray-900">
-                    <User className="w-4 h-4" />
-                    <span className="font-medium">{user.name}님</span>
-                  </Link>
-                  <Button 
-                    variant="outline"
-                    onClick={handleLogout}
-                    className="text-gray-700 border-gray-300 hover:bg-gray-50"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    로그아웃
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Button asChild variant="ghost">
-                    <Link href="/login">로그인</Link>
-                  </Button>
-                  <Button asChild className="bg-indigo-600 text-white hover:bg-indigo-700">
-                    <Link href="/signup">회원가입</Link>
-                  </Button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <SiteHeader showBack backHref="/search" />
 
       {/* 동아리 정보 섹션 */}
       <section className="bg-white border-b border-gray-200">

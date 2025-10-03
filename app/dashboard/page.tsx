@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 import { getCurrentUser } from "@/lib/auth"
 import Link from "next/link"
+import SiteHeader from "@/components/site-header"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Plus, Users, Calendar, DollarSign } from "lucide-react"
@@ -31,27 +32,9 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Header */}
-      <header className="bg-white border-b border-slate-200">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-blue-700 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-lg">U</span>
-            </div>
-            <span className="text-xl font-bold text-slate-900">Uni Club</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link href="/member">
-              <Button variant="outline" size="sm">
-                멤버 뷰
-              </Button>
-            </Link>
-            <span className="text-sm text-slate-600">{user.name}</span>
-            <Button variant="outline" size="sm">
-              로그아웃
-            </Button>
-          </div>
-        </div>
-      </header>
+      <div className="sticky top-0 z-50">
+        <SiteHeader />
+      </div>
 
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-8">

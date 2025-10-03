@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
+import SiteHeader from '@/components/site-header';
 import { groupAPI } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
@@ -99,46 +101,9 @@ export default function SearchPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* 헤더 */}
-      <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Link href="/" className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">U</span>
-              </div>
-              <span className="text-xl font-bold text-gray-900">UNICLUB</span>
-            </Link>
-            
-            <div className="flex items-center gap-4">
-              {user ? (
-                <div className="flex items-center gap-4">
-                  <Link href="/member" className="flex items-center gap-2 text-gray-700 hover:text-gray-900">
-                    <User className="w-4 h-4" />
-                    <span className="font-medium">{user.name}님</span>
-                  </Link>
-                  <Button 
-                    variant="outline"
-                    onClick={handleLogout}
-                    className="text-gray-700 border-gray-300 hover:bg-gray-50"
-                  >
-                    <LogOut className="w-4 h-4 mr-2" />
-                    로그아웃
-                  </Button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <Button asChild variant="ghost">
-                    <Link href="/login">로그인</Link>
-                  </Button>
-                  <Button asChild className="bg-indigo-600 text-white hover:bg-indigo-700">
-                    <Link href="/signup">회원가입</Link>
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </header>
+      <div className="sticky top-0 z-50">
+        <SiteHeader />
+      </div>
 
       {/* 검색 섹션 */}
       <section className="bg-white border-b border-gray-200">

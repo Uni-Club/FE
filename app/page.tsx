@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/lib/auth-context';
 import { 
@@ -36,9 +37,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-lg">U</span>
-              </div>
+              <Image src="/logo.png" alt="UNICLUB 로고" width={32} height={32} className="rounded-lg" />
               <span className="text-xl font-bold text-gray-900">UNICLUB</span>
             </div>
             <div className="flex gap-4">
@@ -217,9 +216,7 @@ export default function LandingPage() {
         <div className="container mx-auto px-6">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center gap-2 mb-4 md:mb-0">
-              <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold">U</span>
-              </div>
+              <Image src="/logo.png" alt="UNICLUB 로고" width={32} height={32} className="rounded-lg" />
               <span className="text-lg font-bold text-white">UNICLUB</span>
             </div>
             <div className="flex gap-6 text-sm">

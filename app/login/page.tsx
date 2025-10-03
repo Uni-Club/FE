@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -58,10 +59,8 @@ export default function LoginPage() {
       {/* 로고 */}
       <div className="absolute top-8 left-8">
         <Link href="/" className="flex items-center gap-2">
-          <div className="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-xl">U</span>
-          </div>
-          <span className="text-2xl font-bold text-gray-900">UNICLUB</span>
+          <Image src="/logo.png" alt="UNICLUB 로고" width={32} height={32} className="rounded-lg" />
+          <span className="text-xl font-bold text-gray-900">UNICLUB</span>
         </Link>
       </div>
 
