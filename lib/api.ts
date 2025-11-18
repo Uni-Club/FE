@@ -175,11 +175,42 @@ export const groupApi = {
   getMembers: (groupId: number, role?: string) =>
     fetchApi(`/groups/${groupId}/members${role ? `?role=${role}` : ''}`),
 
+  // 동아리 멤버 추가
+  addMember: (groupId: number, userId: number, role: string) =>
+    fetchApi(`/groups/${groupId}/members`, {
+      method: 'POST',
+      body: JSON.stringify({ userId, role }),
+    }),
+
+  // 동아리 멤버 강제 퇴출
+  removeMember: (groupId: number, userId: number) =>
+    fetchApi(`/groups/${groupId}/members/${userId}`, {
+      method: 'DELETE',
+    }),
+
   // 탈퇴 신청
   requestLeave: (groupId: number, reason: string) =>
     fetchApi(`/groups/${groupId}/leave`, {
       method: 'POST',
       body: JSON.stringify({ reason }),
+    }),
+
+  // 탈퇴 신청 목록 조회 (관리자)
+  getLeaveRequests: (groupId: number, status?: string) =>
+    fetchApi(`/groups/${groupId}/leave-requests${status ? `?status=${status}` : ''}`),
+
+  // 탈퇴 신청 승인
+  approveLeaveRequest: (groupId: number, requestId: number, reviewNote?: string) =>
+    fetchApi(`/groups/${groupId}/leave-requests/${requestId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ action: 'APPROVE', reviewNote }),
+    }),
+
+  // 탈퇴 신청 거절
+  rejectLeaveRequest: (groupId: number, requestId: number, reviewNote?: string) =>
+    fetchApi(`/groups/${groupId}/leave-requests/${requestId}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ action: 'REJECT', reviewNote }),
     }),
 
   // 모집공고 목록
@@ -227,6 +258,13 @@ export const recruitmentApi = {
   delete: (recruitmentId: number) =>
     fetchApi(`/recruitments/${recruitmentId}`, {
       method: 'DELETE',
+    }),
+
+  // 모집공고 상태 변경
+  updateStatus: (recruitmentId: number, status: 'DRAFT' | 'PUBLISHED' | 'CLOSED' | 'ARCHIVED') =>
+    fetchApi(`/recruitments/${recruitmentId}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ status }),
     }),
 
   // 지원하기
