@@ -4,34 +4,68 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  /* Colors - Campus Energy Palette */
-  --coral: #FF6B6B;
-  --coral-light: #FF8787;
-  --coral-dark: #FA5252;
-  --navy: #1A1D3A;
-  --navy-light: #2D3250;
-  --navy-dark: #0F1123;
-  --cyan: #00D9FF;
-  --cyan-light: #4DFFFF;
-  --cream: #FFF8F0;
-  --sand: #F4E8D8;
-
-  --background: var(--cream);
-  --foreground: var(--navy);
-  --accent: var(--coral);
-  --accent-secondary: var(--cyan);
-
-  /* Shadows */
-  --shadow-soft: 0 4px 20px rgba(26, 29, 58, 0.08);
-  --shadow-medium: 0 8px 30px rgba(26, 29, 58, 0.12);
-  --shadow-hard: 0 12px 40px rgba(26, 29, 58, 0.16);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: var(--navy-dark);
-    --foreground: var(--cream);
+    /* UNICLUB Colors - Campus Energy Palette */
+    --coral: #FF6B6B;
+    --coral-light: #FF8787;
+    --coral-dark: #FA5252;
+    --navy: #1A1D3A;
+    --navy-light: #2D3250;
+    --navy-dark: #0F1123;
+    --cyan: #00D9FF;
+    --cyan-light: #4DFFFF;
+    --cream: #FFF8F0;
+    --sand: #F4E8D8;
+
+    /* shadcn/ui Variables (mapped to UNICLUB colors) */
+    --background: 40 100% 97%; /* cream */
+    --foreground: 232 37% 11%; /* navy */
+    --card: 0 0% 100%; /* white */
+    --card-foreground: 232 37% 11%; /* navy */
+    --popover: 0 0% 100%;
+    --popover-foreground: 232 37% 11%;
+    --primary: 0 86% 70%; /* coral */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 186 100% 50%; /* cyan */
+    --secondary-foreground: 232 37% 11%;
+    --muted: 35 50% 93%; /* sand */
+    --muted-foreground: 232 37% 51%;
+    --accent: 0 86% 70%; /* coral */
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 232 37% 91%;
+    --input: 232 37% 91%;
+    --ring: 0 86% 70%; /* coral */
+    --radius: 1rem;
+
+    /* Shadows */
+    --shadow-soft: 0 4px 20px rgba(26, 29, 58, 0.08);
+    --shadow-medium: 0 8px 30px rgba(26, 29, 58, 0.12);
+    --shadow-hard: 0 12px 40px rgba(26, 29, 58, 0.16);
+  }
+
+  .dark {
+    --background: 232 37% 6%; /* navy-dark */
+    --foreground: 40 100% 97%; /* cream */
+    --card: 232 37% 11%;
+    --card-foreground: 40 100% 97%;
+    --popover: 232 37% 11%;
+    --popover-foreground: 40 100% 97%;
+    --primary: 0 86% 70%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 186 100% 50%;
+    --secondary-foreground: 232 37% 11%;
+    --muted: 232 37% 17%;
+    --muted-foreground: 232 37% 71%;
+    --accent: 0 86% 70%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 232 37% 17%;
+    --input: 232 37% 17%;
+    --ring: 0 86% 70%;
   }
 }
 
