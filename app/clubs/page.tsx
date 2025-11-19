@@ -77,14 +77,14 @@ export default function ClubsPage() {
   });
 
   return (
-    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen">
+    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-neutral-50">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-12">
-          <h1 className="font-display font-bold text-5xl sm:text-6xl mb-4">
+          <h1 className="font-display font-bold text-5xl sm:text-6xl mb-4 text-neutral-900">
             동아리 <span className="text-gradient">탐색</span>
           </h1>
-          <p className="text-xl text-navy/70">
+          <p className="text-xl text-neutral-600">
             {filteredClubs.length}개의 동아리가 여러분을 기다리고 있습니다
           </p>
         </div>
@@ -93,19 +93,19 @@ export default function ClubsPage() {
         <div className="mb-8 space-y-4">
           {/* Search Bar */}
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-navy/40" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400" />
             <input
               type="text"
               placeholder="동아리명이나 설명으로 검색하세요..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-white rounded-xl border border-navy/10 focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all font-medium text-navy placeholder:text-navy/40"
+              className="w-full pl-12 pr-4 py-4 bg-white rounded-2xl border border-neutral-200 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100 transition-all font-medium text-neutral-900 placeholder:text-neutral-400"
             />
           </div>
 
           {/* Category Filters */}
           <div className="flex items-center gap-3 overflow-x-auto pb-2">
-            <div className="flex items-center gap-2 text-navy/60 flex-shrink-0">
+            <div className="flex items-center gap-2 text-neutral-600 flex-shrink-0">
               <Filter className="w-5 h-5" />
               <span className="font-medium">필터:</span>
             </div>
@@ -113,10 +113,10 @@ export default function ClubsPage() {
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-lg font-medium transition-all whitespace-nowrap ${
+                className={`px-4 py-2 rounded-xl font-medium transition-all whitespace-nowrap ${
                   selectedCategory === category
-                    ? 'bg-gradient-coral text-white shadow-md'
-                    : 'bg-white text-navy/70 hover:bg-sand border border-navy/10'
+                    ? 'bg-sky-500 text-white shadow-primary'
+                    : 'bg-white text-neutral-700 hover:bg-neutral-100 border border-neutral-200'
                 }`}
               >
                 {category}
@@ -127,10 +127,10 @@ export default function ClubsPage() {
 
         {/* Results Count */}
         <div className="mb-6 flex items-center justify-between">
-          <p className="text-navy/60">
-            <span className="font-bold text-coral">{filteredClubs.length}</span>개의 동아리
+          <p className="text-neutral-600">
+            <span className="font-bold text-sky-500">{filteredClubs.length}</span>개의 동아리
           </p>
-          <button className="flex items-center gap-2 px-4 py-2 text-navy/70 hover:text-coral transition-colors">
+          <button className="flex items-center gap-2 px-4 py-2 text-neutral-700 hover:text-sky-500 transition-colors">
             <SlidersHorizontal className="w-4 h-4" />
             <span className="text-sm font-medium">정렬</span>
           </button>
@@ -145,13 +145,13 @@ export default function ClubsPage() {
           </div>
         ) : (
           <div className="text-center py-20">
-            <div className="w-20 h-20 bg-sand rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search className="w-10 h-10 text-navy/30" />
+            <div className="w-20 h-20 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Search className="w-10 h-10 text-neutral-400" />
             </div>
-            <h3 className="font-display font-bold text-2xl text-navy mb-2">
+            <h3 className="font-display font-bold text-2xl text-neutral-900 mb-2">
               검색 결과가 없습니다
             </h3>
-            <p className="text-navy/60">
+            <p className="text-neutral-600">
               다른 검색어나 필터를 시도해보세요
             </p>
           </div>

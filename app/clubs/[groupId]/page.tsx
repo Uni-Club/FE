@@ -46,10 +46,10 @@ export default function ClubDetailPage() {
 
   if (!club) {
     return (
-      <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen">
+      <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-neutral-50">
         <div className="max-w-4xl mx-auto text-center">
-          <h1 className="font-display font-bold text-4xl mb-4">동아리를 찾을 수 없습니다</h1>
-          <a href="/clubs" className="text-coral hover:underline">
+          <h1 className="font-display font-bold text-4xl mb-4 text-neutral-900">동아리를 찾을 수 없습니다</h1>
+          <a href="/clubs" className="text-sky-500 hover:underline">
             동아리 목록으로 돌아가기
           </a>
         </div>
@@ -58,23 +58,23 @@ export default function ClubDetailPage() {
   }
 
   return (
-    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen">
+    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-neutral-50">
       <div className="max-w-6xl mx-auto">
-        {/* Hero Section */}
+        {/* Hero Section - Umami style */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-navy rounded-3xl p-8 sm:p-12 mb-8 relative overflow-hidden"
+          className="bg-gradient-to-br from-sky-600 via-sky-500 to-cyan-500 rounded-3xl p-8 sm:p-12 mb-8 relative overflow-hidden"
         >
-          <div className="absolute top-0 right-0 w-96 h-96 bg-cyan/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 w-96 h-96 bg-coral/20 rounded-full blur-3xl" />
+          <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl animate-float" />
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl animate-float-delayed" />
 
           <div className="relative z-10">
             <div className="flex items-center gap-3 mb-6">
-              <span className="px-4 py-2 bg-white/10 backdrop-blur-sm text-white rounded-full text-sm font-medium">
+              <span className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-full text-sm font-semibold">
                 {club.category}
               </span>
-              <span className="text-cream/70 flex items-center gap-1">
+              <span className="text-white/90 flex items-center gap-1">
                 <MapPin className="w-4 h-4" />
                 {club.school.schoolName}
               </span>
@@ -84,7 +84,7 @@ export default function ClubDetailPage() {
               {club.groupName}
             </h1>
 
-            <p className="text-xl text-cream/90 mb-8 max-w-3xl leading-relaxed">
+            <p className="text-xl text-white/95 mb-8 max-w-3xl leading-relaxed">
               {club.description}
             </p>
 
@@ -92,7 +92,7 @@ export default function ClubDetailPage() {
               {club.tags.map((tag: string, i: number) => (
                 <span
                   key={i}
-                  className="px-4 py-2 bg-white/10 backdrop-blur-sm text-white rounded-lg text-sm font-medium"
+                  className="px-4 py-2 bg-white/20 backdrop-blur-sm text-white rounded-xl text-sm font-medium"
                 >
                   #{tag}
                 </span>
@@ -100,11 +100,11 @@ export default function ClubDetailPage() {
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4">
-              <button className="px-8 py-4 bg-gradient-coral text-white rounded-xl font-semibold hover:shadow-xl transform hover:scale-105 transition-all flex items-center justify-center gap-2">
+              <button className="px-8 py-4 bg-white text-sky-600 rounded-2xl font-bold hover:shadow-soft-xl transform hover:scale-105 transition-all flex items-center justify-center gap-2">
                 가입 신청하기
                 <ArrowRight className="w-5 h-5" />
               </button>
-              <button className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white rounded-xl font-semibold hover:bg-white/20 transition-all border border-white/20 flex items-center justify-center gap-2">
+              <button className="px-8 py-4 bg-white/10 backdrop-blur-sm text-white rounded-2xl font-semibold hover:bg-white/20 transition-all border-2 border-white/30 flex items-center justify-center gap-2">
                 <Star className="w-5 h-5" />
                 관심 동아리 추가
               </button>
@@ -112,45 +112,45 @@ export default function ClubDetailPage() {
           </div>
         </motion.div>
 
-        {/* Stats */}
+        {/* Stats - Notion style */}
         <div className="grid sm:grid-cols-3 gap-6 mb-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white rounded-2xl p-6 text-center"
+            className="bg-white rounded-2xl p-6 text-center border border-neutral-200 hover:shadow-soft-lg transition-all"
           >
-            <Users className="w-8 h-8 text-coral mx-auto mb-3" />
-            <div className="font-display font-bold text-3xl text-navy mb-1">
+            <Users className="w-8 h-8 text-sky-500 mx-auto mb-3" />
+            <div className="font-display font-bold text-3xl text-neutral-900 mb-1">
               {club.memberCount}명
             </div>
-            <div className="text-navy/60">활동 중인 멤버</div>
+            <div className="text-neutral-600">활동 중인 멤버</div>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-white rounded-2xl p-6 text-center"
+            className="bg-white rounded-2xl p-6 text-center border border-neutral-200 hover:shadow-soft-lg transition-all"
           >
-            <Calendar className="w-8 h-8 text-cyan mx-auto mb-3" />
-            <div className="font-display font-bold text-3xl text-navy mb-1">
+            <Calendar className="w-8 h-8 text-purple-500 mx-auto mb-3" />
+            <div className="font-display font-bold text-3xl text-neutral-900 mb-1">
               {club.activeRecruitmentCount}건
             </div>
-            <div className="text-navy/60">진행 중인 모집</div>
+            <div className="text-neutral-600">진행 중인 모집</div>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
-            className="bg-white rounded-2xl p-6 text-center"
+            className="bg-white rounded-2xl p-6 text-center border border-neutral-200 hover:shadow-soft-lg transition-all"
           >
-            <MessageCircle className="w-8 h-8 text-navy mx-auto mb-3" />
-            <div className="font-display font-bold text-3xl text-navy mb-1">
+            <MessageCircle className="w-8 h-8 text-cyan-500 mx-auto mb-3" />
+            <div className="font-display font-bold text-3xl text-neutral-900 mb-1">
               {club.boards.length}개
             </div>
-            <div className="text-navy/60">운영 중인 게시판</div>
+            <div className="text-neutral-600">운영 중인 게시판</div>
           </motion.div>
         </div>
 
@@ -163,18 +163,18 @@ export default function ClubDetailPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 }}
-              className="bg-white rounded-2xl p-8"
+              className="bg-white rounded-2xl p-8 border border-neutral-200"
             >
-              <h2 className="font-display font-bold text-2xl mb-6">진행 중인 모집</h2>
+              <h2 className="font-display font-bold text-2xl mb-6 text-neutral-900">진행 중인 모집</h2>
               {club.recruitments.map((recruitment: any) => (
-                <div key={recruitment.recruitmentId} className="border border-navy/10 rounded-xl p-6">
-                  <h3 className="font-display font-bold text-xl mb-3">{recruitment.title}</h3>
-                  <div className="flex flex-wrap gap-4 text-sm text-navy/60 mb-4">
+                <div key={recruitment.recruitmentId} className="border border-neutral-200 rounded-2xl p-6 hover:border-sky-200 transition-colors">
+                  <h3 className="font-display font-bold text-xl mb-3 text-neutral-900">{recruitment.title}</h3>
+                  <div className="flex flex-wrap gap-4 text-sm text-neutral-600 mb-4">
                     <span>모집 인원: {recruitment.capacity}명</span>
                     <span>지원자: {recruitment.applicantCount}명</span>
                     <span>마감: {new Date(recruitment.applyEnd).toLocaleDateString('ko-KR')}</span>
                   </div>
-                  <button className="px-6 py-3 bg-gradient-coral text-white rounded-lg font-medium hover:shadow-lg transition-all">
+                  <button className="px-6 py-3 bg-sky-500 text-white rounded-2xl font-semibold hover:bg-sky-600 hover:shadow-primary transition-all">
                     지원하기
                   </button>
                 </div>
@@ -186,19 +186,19 @@ export default function ClubDetailPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="bg-white rounded-2xl p-8"
+              className="bg-white rounded-2xl p-8 border border-neutral-200"
             >
-              <h2 className="font-display font-bold text-2xl mb-4">동아리 소개</h2>
-              <p className="text-navy/70 leading-relaxed mb-6">{club.description}</p>
+              <h2 className="font-display font-bold text-2xl mb-4 text-neutral-900">동아리 소개</h2>
+              <p className="text-neutral-600 leading-relaxed mb-6">{club.description}</p>
 
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <span className="font-medium text-navy">동아리장:</span>
-                  <span className="text-navy/70">{club.leader.name}</span>
+                  <span className="font-medium text-neutral-900">동아리장:</span>
+                  <span className="text-neutral-600">{club.leader.name}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="font-medium text-navy">소속:</span>
-                  <span className="text-navy/70">
+                  <span className="font-medium text-neutral-900">소속:</span>
+                  <span className="text-neutral-600">
                     {club.school.schoolName} {club.school.campusName}
                   </span>
                 </div>
@@ -213,17 +213,17 @@ export default function ClubDetailPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="bg-white rounded-2xl p-6"
+              className="bg-white rounded-2xl p-6 border border-neutral-200"
             >
-              <h3 className="font-display font-bold text-xl mb-4">게시판</h3>
+              <h3 className="font-display font-bold text-xl mb-4 text-neutral-900">게시판</h3>
               <div className="space-y-2">
                 {club.boards.map((board: any, i: number) => (
                   <a
                     key={i}
                     href="#"
-                    className="block px-4 py-3 bg-sand/30 hover:bg-sand rounded-lg transition-colors"
+                    className="block px-4 py-3 bg-neutral-50 hover:bg-neutral-100 rounded-xl transition-colors"
                   >
-                    <span className="font-medium text-navy">{board.name}</span>
+                    <span className="font-medium text-neutral-900">{board.name}</span>
                   </a>
                 ))}
               </div>
@@ -234,13 +234,13 @@ export default function ClubDetailPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7 }}
-              className="bg-gradient-coral rounded-2xl p-6 text-white"
+              className="bg-gradient-to-br from-sky-500 to-cyan-500 rounded-2xl p-6 text-white"
             >
               <h3 className="font-display font-bold text-xl mb-3">문의하기</h3>
-              <p className="text-white/90 text-sm mb-4">
+              <p className="text-white/95 text-sm mb-4">
                 동아리에 대해 궁금한 점이 있으신가요?
               </p>
-              <button className="w-full px-6 py-3 bg-white text-coral rounded-lg font-medium hover:shadow-lg transition-all">
+              <button className="w-full px-6 py-3 bg-white text-sky-600 rounded-2xl font-semibold hover:shadow-soft-xl transition-all">
                 메시지 보내기
               </button>
             </motion.section>
