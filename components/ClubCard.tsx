@@ -9,7 +9,8 @@ interface ClubCardProps {
     groupId: number;
     groupName: string;
     description: string;
-    school: {
+    schoolName?: string;
+    school?: {
       schoolName: string;
     };
     memberCount: number;
@@ -51,7 +52,7 @@ export default function ClubCard({ club, index = 0 }: ClubCardProps) {
               </h3>
               <div className="flex items-center gap-2 text-sm text-neutral-600">
                 <MapPin className="w-4 h-4" />
-                <span>{club.school.schoolName}</span>
+                <span>{club.schoolName || club.school?.schoolName}</span>
               </div>
             </div>
             <div className="w-10 h-10 bg-sky-100 rounded-xl flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-sky-400 group-hover:to-sky-600 group-hover:scale-110 transition-all">

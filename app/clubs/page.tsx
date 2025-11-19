@@ -1,80 +1,61 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, Filter, SlidersHorizontal } from 'lucide-react';
 import ClubCard from '@/components/ClubCard';
-
-// Mock data - 실제로는 API에서 가져올 데이터
-const mockClubs = [
-  {
-    groupId: 1,
-    groupName: 'GDSC Inha',
-    description: 'Google Developer Student Clubs Inha University. 개발자를 꿈꾸는 학생들이 함께 성장하는 커뮤니티입니다.',
-    school: { schoolName: '인하대학교' },
-    memberCount: 45,
-    category: 'IT/프로그래밍',
-    tags: ['개발', '구글', '스터디'],
-  },
-  {
-    groupId: 2,
-    groupName: '밴드부',
-    description: '음악으로 하나되는 우리. 다양한 악기를 연주하고 합주하는 동아리입니다.',
-    school: { schoolName: '인하대학교' },
-    memberCount: 23,
-    category: '예술/문화',
-    tags: ['음악', '공연', '밴드'],
-  },
-  {
-    groupId: 3,
-    groupName: '봉사 동아리',
-    description: '나눔의 가치를 실천하는 봉사 동아리. 매주 지역사회를 위한 봉사활동을 진행합니다.',
-    school: { schoolName: '인하대학교' },
-    memberCount: 32,
-    category: '봉사',
-    tags: ['봉사', '나눔', '지역사회'],
-  },
-  {
-    groupId: 4,
-    groupName: '농구부',
-    description: '함께 뛰고, 함께 성장하는 농구 동아리. 초보자부터 경험자까지 모두 환영합니다.',
-    school: { schoolName: '인하대학교' },
-    memberCount: 28,
-    category: '스포츠',
-    tags: ['농구', '운동', '건강'],
-  },
-  {
-    groupId: 5,
-    groupName: '사진 동아리',
-    description: '렌즈로 담는 청춘. 사진 촬영 기술을 배우고 전시회도 개최하는 동아리입니다.',
-    school: { schoolName: '인하대학교' },
-    memberCount: 19,
-    category: '예술/문화',
-    tags: ['사진', '전시', '예술'],
-  },
-  {
-    groupId: 6,
-    groupName: 'AI 연구회',
-    description: '인공지능과 머신러닝을 연구하고 프로젝트를 진행하는 학술 동아리입니다.',
-    school: { schoolName: '인하대학교' },
-    memberCount: 37,
-    category: 'IT/프로그래밍',
-    tags: ['AI', '머신러닝', '연구'],
-  },
-];
+import Loading from '@/components/Loading';
+import ErrorMessage from '@/components/ErrorMessage';
+import { groupApi } from '@/lib/api';
 
 const categories = ['전체', 'IT/프로그래밍', '예술/문화', '스포츠', '봉사'];
 
 export default function ClubsPage() {
+  const [clubs, setClubs] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('전체');
 
-  const filteredClubs = mockClubs.filter((club) => {
+  useEffect(() => {
+    loadClubs();
+  }, []);
+
+  const loadClubs = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      const response = await groupApi.search({
+        keyword: searchQuery || undefined,
+        page: 0,
+        size: 100,
+      });
+      if (response && Array.isArray(response)) {
+        setClubs(response);
+      } else {
+        setClubs([]);
+      }
+    } catch (err) {
+      console.error('Failed to load clubs:', err);
+      setError('동아리 목록을 불러오는데 실패했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSearch = () => {
+    loadClubs();
+  };
+
+  const filteredClubs = clubs.filter((club) => {
     const matchesSearch =
-      club.groupName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      club.description.toLowerCase().includes(searchQuery.toLowerCase());
+      !searchQuery ||
+      club.groupName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      club.description?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === '전체' || club.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  if (loading) return <Loading />;
 
   return (
     <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-neutral-50">
@@ -88,6 +69,9 @@ export default function ClubsPage() {
             {filteredClubs.length}개의 동아리가 여러분을 기다리고 있습니다
           </p>
         </div>
+
+        {/* Error Message */}
+        {error && <ErrorMessage message={error} />}
 
         {/* Search and Filters */}
         <div className="mb-8 space-y-4">
