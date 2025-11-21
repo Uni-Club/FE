@@ -111,7 +111,7 @@ export const userApi = {
 
   // 내 지원 내역
   getMyApplications: (status?: string) =>
-    fetchApi(`/users/me/applications${status ? `?status=${status}` : ''}`),
+    fetchApi(`/applications/my${status ? `?status=${status}` : ''}`),
 };
 
 // 학교 API
@@ -127,7 +127,7 @@ export const schoolApi = {
   getGroups: (schoolId: number, params?: { page?: number; size?: number; keyword?: string }) =>
     fetchApi<PageResponse<any>>(
       `/schools/${schoolId}/groups?` +
-        new URLSearchParams(params as any).toString()
+      new URLSearchParams(params as any).toString()
     ),
 };
 
