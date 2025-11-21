@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { Calendar, Users, Eye, MapPin, Tag } from 'lucide-react';
+import { Calendar, Users, Eye, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { recruitmentApi } from '@/lib/api';
 import Loading from '@/components/Loading';
@@ -95,14 +95,43 @@ export default function RecruitmentDetailPage() {
             </div>
           </div>
 
-          {/* Apply Button */}
-          <div className="pt-8 border-t border-navy/10">
-            <button
-              onClick={handleApply}
-              className="w-full py-4 bg-gradient-coral text-white font-bold rounded-xl hover:shadow-lg transition-all"
-            >
-              지원하기
-            </button>
+          {/* Apply Button & Status Controls */}
+          <div className="pt-8 border-t border-neutral-200 space-y-4">
+            {recruitment.status === 'PUBLISHED' ? (
+              <button
+                onClick={handleApply}
+                className="w-full py-4 bg-gradient-coral text-white font-bold rounded-xl hover:shadow-lg transition-all"
+              >
+                지원하기
+              </button>
+            ) : (
+              <div className="w-full py-4 bg-neutral-100 text-neutral-400 font-bold rounded-xl text-center cursor-not-allowed">
+                {recruitment.status === 'CLOSED' ? '마감된 공고입니다' : '지원 기간이 아닙니다'}
+              </div>
+            )}
+
+            {/* Admin Controls */}
+            <div className="flex gap-2 justify-end">
+              {['DRAFT', 'PUBLISHED', 'CLOSED'].map((status) => (
+                <button
+                  key={status}
+                  onClick={async () => {
+                    try {
+                      await recruitmentApi.updateStatus(recruitment.recruitmentId, status as any);
+                      loadRecruitment();
+                    } catch (e) {
+                      alert('상태 변경 실패');
+                    }
+                  }}
+                  className={`px-3 py-1 text-xs rounded-full border ${recruitment.status === status
+                      ? 'bg-neutral-900 text-white border-neutral-900'
+                      : 'bg-white text-neutral-600 border-neutral-200 hover:border-neutral-900'
+                    }`}
+                >
+                  {status}
+                </button>
+              ))}
+            </div>
           </div>
         </motion.div>
       </div>
