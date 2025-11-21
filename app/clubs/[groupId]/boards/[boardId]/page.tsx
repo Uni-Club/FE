@@ -2,70 +2,98 @@
 
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { useState } from 'react';
-import { MessageSquare, User, Calendar, Eye, Pin, PlusCircle, Search } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { MessageSquare, User, Calendar, Eye, Pin, PlusCircle, Search, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { boardApi, postApi } from '@/lib/api';
 
-// Mock posts - 백엔드 API 구현 시 교체 예정
-const mockPosts = [
-  {
-    postId: 1,
-    title: '[필독] 2025년 1월 정기 모임 안내',
-    content: '1월 정기 모임은 15일 오후 7시에 진행됩니다.',
-    author: { name: '홍길동' },
-    createdAt: '2025-01-10T14:30:00',
-    views: 234,
-    isPinned: true,
-    isNotice: true,
-  },
-  {
-    postId: 2,
-    title: '신입 부원 환영합니다!',
-    content: '새로 들어오신 분들 환영해요~',
-    author: { name: '김철수' },
-    createdAt: '2025-01-12T10:20:00',
-    views: 156,
-    isPinned: false,
-    isNotice: false,
-  },
-  {
-    postId: 3,
-    title: '이번 주 스터디 주제 공유',
-    content: 'React 19의 새로운 기능들에 대해 알아봅시다',
-    author: { name: '이영희' },
-    createdAt: '2025-01-14T16:45:00',
-    views: 89,
-    isPinned: false,
-    isNotice: false,
-  },
-];
+interface Post {
+  postId: number;
+  title: string;
+  content: string;
+  author: { name: string };
+  createdAt: string;
+  views: number;
+  isPinned: boolean;
+  isNotice: boolean;
+}
+
+interface Board {
+  boardId: number;
+  name: string;
+  description: string;
+}
 
 export default function BoardDetailPage() {
   const params = useParams();
   const groupId = params.groupId as string;
   const boardId = params.boardId as string;
-  const [searchQuery, setSearchQuery] = useState('');
 
-  const boardInfo = {
-    name: '공지사항',
-    description: '동아리 공지사항을 확인하세요',
-  };
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [board, setBoard] = useState<Board | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [boardRes, postsRes] = await Promise.all([
+          boardApi.getById(Number(groupId), Number(boardId)),
+          postApi.getByBoard(Number(groupId), Number(boardId), { keyword: searchQuery }),
+        ]);
+
+        if (boardRes.success && boardRes.data) {
+          setBoard(boardRes.data as Board);
+        }
+
+        if (postsRes.success && postsRes.data) {
+          setPosts(postsRes.data.content || []);
+        }
+      } catch (err) {
+        setError('데이터를 불러오는 중 오류가 발생했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [groupId, boardId, searchQuery]);
+
+  if (loading) {
+    return (
+      <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-neutral-50">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-neutral-50">
+        <div className="max-w-5xl mx-auto text-center py-20">
+          <p className="text-red-500">{error}</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-neutral-50">
       <div className="max-w-5xl mx-auto">
-        {/* Header */}
         <div className="mb-8">
           <Link href={`/clubs/${groupId}/boards`} className="text-sky-500 hover:underline mb-2 inline-block">
             ← 게시판 목록
           </Link>
           <h1 className="font-display font-bold text-4xl sm:text-5xl mb-2 text-neutral-900">
-            {boardInfo.name}
+            {board?.name || '게시판'}
           </h1>
-          <p className="text-lg text-neutral-600">{boardInfo.description}</p>
+          <p className="text-lg text-neutral-600">{board?.description}</p>
         </div>
 
-        {/* Search and Actions */}
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="relative flex-1">
             <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400" />
@@ -85,9 +113,8 @@ export default function BoardDetailPage() {
           </Link>
         </div>
 
-        {/* Posts List */}
         <div className="space-y-3">
-          {mockPosts.map((post, index) => (
+          {posts.map((post, index) => (
             <motion.div
               key={post.postId}
               initial={{ opacity: 0, y: 20 }}
@@ -141,8 +168,7 @@ export default function BoardDetailPage() {
           ))}
         </div>
 
-        {/* Empty State */}
-        {mockPosts.length === 0 && (
+        {posts.length === 0 && (
           <div className="text-center py-20 bg-white rounded-2xl border border-neutral-200">
             <MessageSquare className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
             <h3 className="font-display font-bold text-xl text-neutral-900 mb-2">
