@@ -1,78 +1,134 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { Calendar, Clock, MapPin, Users, PlusCircle, Edit2, Trash2 } from 'lucide-react';
+import { Calendar, Clock, MapPin, Users, PlusCircle, Edit2, Trash2, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ScheduleModal from '@/components/ScheduleModal';
+import { scheduleApi } from '@/lib/api';
 
-// Mock schedules - 백엔드 API 구현 시 교체 예정
-const initialSchedules = [
-  {
-    scheduleId: 1,
-    title: '정기 모임',
-    description: '1월 정기 모임입니다',
-    startAt: '2025-01-15T19:00:00',
-    endAt: '2025-01-15T21:00:00',
-    location: '학생회관 3층',
-    attendees: 25,
-  },
-  {
-    scheduleId: 2,
-    title: '스터디 세션',
-    description: 'React 19 새기능 학습',
-    startAt: '2025-01-20T14:00:00',
-    endAt: '2025-01-20T16:00:00',
-    location: '도서관 세미나실',
-    attendees: 15,
-  },
-  {
-    scheduleId: 3,
-    title: '워크샵',
-    description: '겨울 워크샵',
-    startAt: '2025-01-28T10:00:00',
-    endAt: '2025-01-28T18:00:00',
-    location: '수원',
-    attendees: 30,
-  },
-];
+interface Schedule {
+  scheduleId: number;
+  title: string;
+  description: string;
+  startAt: string;
+  endAt: string;
+  location: string;
+  attendees: number;
+}
 
 export default function SchedulesPage() {
   const params = useParams();
   const groupId = params.groupId as string;
 
-  const [schedules, setSchedules] = useState(initialSchedules);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingSchedule, setEditingSchedule] = useState<any>(null);
+  const [editingSchedule, setEditingSchedule] = useState<Schedule | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleCreate = (data: any) => {
-    const newSchedule = {
-      ...data,
-      scheduleId: Math.max(...schedules.map(s => s.scheduleId), 0) + 1,
-      attendees: 0,
-    };
-    setSchedules([...schedules, newSchedule]);
-    setIsModalOpen(false);
-  };
-
-  const handleUpdate = (data: any) => {
-    setSchedules(schedules.map(s =>
-      s.scheduleId === editingSchedule.scheduleId ? { ...s, ...data } : s
-    ));
-    setIsModalOpen(false);
-    setEditingSchedule(null);
-  };
-
-  const handleDelete = (id: number) => {
-    if (confirm('일정을 삭제하시겠습니까?')) {
-      setSchedules(schedules.filter(s => s.scheduleId !== id));
+  const fetchSchedules = async () => {
+    try {
+      setLoading(true);
+      const response = await scheduleApi.getByGroup(Number(groupId));
+      if (response.success && response.data) {
+        setSchedules(response.data);
+      } else {
+        setError(response.error?.message || '일정을 불러올 수 없습니다.');
+      }
+    } catch (err) {
+      setError('일정을 불러오는 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const openEditModal = (schedule: any) => {
+  useEffect(() => {
+    fetchSchedules();
+  }, [groupId]);
+
+  const handleCreate = async (data: any) => {
+    try {
+      const response = await scheduleApi.create(Number(groupId), data);
+      if (response.success) {
+        await fetchSchedules();
+        setIsModalOpen(false);
+      } else {
+        alert(response.error?.message || '일정 생성에 실패했습니다.');
+      }
+    } catch (err) {
+      alert('일정 생성 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleUpdate = async (data: any) => {
+    if (!editingSchedule) return;
+    try {
+      const response = await scheduleApi.update(Number(groupId), editingSchedule.scheduleId, data);
+      if (response.success) {
+        await fetchSchedules();
+        setIsModalOpen(false);
+        setEditingSchedule(null);
+      } else {
+        alert(response.error?.message || '일정 수정에 실패했습니다.');
+      }
+    } catch (err) {
+      alert('일정 수정 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('일정을 삭제하시겠습니까?')) return;
+    try {
+      const response = await scheduleApi.delete(Number(groupId), id);
+      if (response.success) {
+        await fetchSchedules();
+      } else {
+        alert(response.error?.message || '삭제에 실패했습니다.');
+      }
+    } catch (err) {
+      alert('삭제 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleAttend = async (scheduleId: number) => {
+    try {
+      const response = await scheduleApi.attend(Number(groupId), scheduleId);
+      if (response.success) {
+        await fetchSchedules();
+        alert('참석 신청이 완료되었습니다.');
+      } else {
+        alert(response.error?.message || '참석 신청에 실패했습니다.');
+      }
+    } catch (err) {
+      alert('참석 신청 중 오류가 발생했습니다.');
+    }
+  };
+
+  const openEditModal = (schedule: Schedule) => {
     setEditingSchedule(schedule);
     setIsModalOpen(true);
   };
+
+  if (loading) {
+    return (
+      <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-neutral-50">
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
+        </div>
+      </main>
+    );
+  }
+
+  if (error) {
+    return (
+      <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-neutral-50">
+        <div className="max-w-6xl mx-auto text-center py-20">
+          <p className="text-red-500">{error}</p>
+        </div>
+      </main>
+    );
+  }
 
   return (
     <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-neutral-50">
@@ -98,75 +154,7 @@ export default function SchedulesPage() {
           </button>
         </div>
 
-        {/* Calendar Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {schedules.map((schedule, index) => (
-            <motion.div
-              key={schedule.scheduleId}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.4, delay: index * 0.1 }}
-              className="bg-white rounded-2xl p-6 hover:shadow-soft-lg transition-all duration-300 border border-neutral-200 hover:border-sky-200 group"
-            >
-              <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 bg-sky-100 rounded-xl flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-sky-500" />
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 bg-sky-50 text-sky-600 text-xs rounded-full font-semibold">
-                    {new Date(schedule.startAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
-                  </span>
-                  <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                      onClick={() => openEditModal(schedule)}
-                      className="p-1 text-neutral-400 hover:text-sky-500"
-                    >
-                      <Edit2 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(schedule.scheduleId)}
-                      className="p-1 text-neutral-400 hover:text-red-500"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              <h3 className="font-display font-bold text-xl text-neutral-900 mb-2">
-                {schedule.title}
-              </h3>
-              <p className="text-sm text-neutral-600 mb-4 line-clamp-2">
-                {schedule.description}
-              </p>
-
-              <div className="space-y-2 text-sm text-neutral-600">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  <span>
-                    {new Date(schedule.startAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} -
-                    {new Date(schedule.endAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <MapPin className="w-4 h-4" />
-                  <span>{schedule.location}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4" />
-                  <span>{schedule.attendees}명 참석 예정</span>
-                </div>
-              </div>
-
-              <button className="w-full mt-4 px-4 py-2 bg-sky-50 text-sky-600 rounded-lg font-medium hover:bg-sky-100 transition-all">
-                참석 신청
-              </button>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Empty State */}
-        {schedules.length === 0 && (
+        {schedules.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-2xl border border-neutral-200">
             <Calendar className="w-16 h-16 text-neutral-300 mx-auto mb-4" />
             <h3 className="font-display font-bold text-xl text-neutral-900 mb-2">
@@ -181,6 +169,75 @@ export default function SchedulesPage() {
             >
               일정 추가
             </button>
+          </div>
+        ) : (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {schedules.map((schedule, index) => (
+              <motion.div
+                key={schedule.scheduleId}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: index * 0.1 }}
+                className="bg-white rounded-2xl p-6 hover:shadow-soft-lg transition-all duration-300 border border-neutral-200 hover:border-sky-200 group"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="w-12 h-12 bg-sky-100 rounded-xl flex items-center justify-center">
+                    <Calendar className="w-6 h-6 text-sky-500" />
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 bg-sky-50 text-sky-600 text-xs rounded-full font-semibold">
+                      {new Date(schedule.startAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                    </span>
+                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => openEditModal(schedule)}
+                        className="p-1 text-neutral-400 hover:text-sky-500"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(schedule.scheduleId)}
+                        className="p-1 text-neutral-400 hover:text-red-500"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <h3 className="font-display font-bold text-xl text-neutral-900 mb-2">
+                  {schedule.title}
+                </h3>
+                <p className="text-sm text-neutral-600 mb-4 line-clamp-2">
+                  {schedule.description}
+                </p>
+
+                <div className="space-y-2 text-sm text-neutral-600">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-4 h-4" />
+                    <span>
+                      {new Date(schedule.startAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} -
+                      {new Date(schedule.endAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    <span>{schedule.location}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Users className="w-4 h-4" />
+                    <span>{schedule.attendees}명 참석 예정</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => handleAttend(schedule.scheduleId)}
+                  className="w-full mt-4 px-4 py-2 bg-sky-50 text-sky-600 rounded-lg font-medium hover:bg-sky-100 transition-all"
+                >
+                  참석 신청
+                </button>
+              </motion.div>
+            ))}
           </div>
         )}
 
