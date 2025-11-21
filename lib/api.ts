@@ -294,6 +294,95 @@ export const applicationApi = {
     }),
 };
 
+// 게시판 API
+export const boardApi = {
+  // 게시판 목록 조회
+  getByGroup: (groupId: number) => fetchApi<any[]>(`/groups/${groupId}/boards`),
+
+  // 게시판 상세 조회
+  getById: (groupId: number, boardId: number) =>
+    fetchApi(`/groups/${groupId}/boards/${boardId}`),
+
+  // 게시판 생성
+  create: (groupId: number, data: { name: string; description?: string; boardType: string }) =>
+    fetchApi(`/groups/${groupId}/boards`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  // 게시판 삭제
+  delete: (groupId: number, boardId: number) =>
+    fetchApi(`/groups/${groupId}/boards/${boardId}`, { method: 'DELETE' }),
+};
+
+// 게시글 API
+export const postApi = {
+  // 게시글 목록 조회
+  getByBoard: (groupId: number, boardId: number, params?: { page?: number; size?: number; keyword?: string }) =>
+    fetchApi<PageResponse<any>>(
+      `/groups/${groupId}/boards/${boardId}/posts?` + new URLSearchParams(params as any).toString()
+    ),
+
+  // 게시글 상세 조회
+  getById: (groupId: number, boardId: number, postId: number) =>
+    fetchApi(`/groups/${groupId}/boards/${boardId}/posts/${postId}`),
+
+  // 게시글 작성
+  create: (groupId: number, boardId: number, data: { title: string; content: string }) =>
+    fetchApi(`/groups/${groupId}/boards/${boardId}/posts`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  // 게시글 수정
+  update: (groupId: number, boardId: number, postId: number, data: { title?: string; content?: string }) =>
+    fetchApi(`/groups/${groupId}/boards/${boardId}/posts/${postId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  // 게시글 삭제
+  delete: (groupId: number, boardId: number, postId: number) =>
+    fetchApi(`/groups/${groupId}/boards/${boardId}/posts/${postId}`, { method: 'DELETE' }),
+};
+
+// 일정 API
+export const scheduleApi = {
+  // 일정 목록 조회
+  getByGroup: (groupId: number, params?: { month?: string; year?: string }) =>
+    fetchApi<any[]>(`/groups/${groupId}/schedules?` + new URLSearchParams(params as any).toString()),
+
+  // 일정 상세 조회
+  getById: (groupId: number, scheduleId: number) =>
+    fetchApi(`/groups/${groupId}/schedules/${scheduleId}`),
+
+  // 일정 생성
+  create: (groupId: number, data: { title: string; description?: string; startAt: string; endAt: string; location?: string }) =>
+    fetchApi(`/groups/${groupId}/schedules`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  // 일정 수정
+  update: (groupId: number, scheduleId: number, data: { title?: string; description?: string; startAt?: string; endAt?: string; location?: string }) =>
+    fetchApi(`/groups/${groupId}/schedules/${scheduleId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  // 일정 삭제
+  delete: (groupId: number, scheduleId: number) =>
+    fetchApi(`/groups/${groupId}/schedules/${scheduleId}`, { method: 'DELETE' }),
+
+  // 참석 신청
+  attend: (groupId: number, scheduleId: number) =>
+    fetchApi(`/groups/${groupId}/schedules/${scheduleId}/attend`, { method: 'POST' }),
+
+  // 참석 취소
+  cancelAttend: (groupId: number, scheduleId: number) =>
+    fetchApi(`/groups/${groupId}/schedules/${scheduleId}/attend`, { method: 'DELETE' }),
+};
+
 export default {
   auth: authApi,
   user: userApi,
@@ -301,4 +390,7 @@ export default {
   group: groupApi,
   recruitment: recruitmentApi,
   application: applicationApi,
+  board: boardApi,
+  post: postApi,
+  schedule: scheduleApi,
 };
