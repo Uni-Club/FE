@@ -148,9 +148,8 @@ export default function ApplicationDetailPage() {
           {application.reviewNote && (
             <div className="mb-6">
               <h2 className="font-bold text-xl text-neutral-900 mb-4">심사 결과</h2>
-              <div className={`rounded-xl p-4 ${
-                application.status === 'ACCEPTED' ? 'bg-green-50' : 'bg-red-50'
-              }`}>
+              <div className={`rounded-xl p-4 ${application.status === 'ACCEPTED' ? 'bg-green-50' : 'bg-red-50'
+                }`}>
                 <p className="text-neutral-700 whitespace-pre-wrap">
                   {application.reviewNote}
                 </p>
@@ -173,6 +172,29 @@ export default function ApplicationDetailPage() {
               <button className="flex-1 px-6 py-4 bg-red-500 text-white rounded-xl font-bold hover:bg-red-600 transition-all flex items-center justify-center gap-2">
                 <XCircle className="w-5 h-5" />
                 불합격
+              </button>
+            </div>
+          )}
+
+          {/* Applicant Actions */}
+          {(application.status === 'SUBMITTED' || application.status === 'PENDING') && (
+            <div className="mt-4 pt-6 border-t border-neutral-200">
+              <button
+                onClick={async () => {
+                  if (confirm('정말로 지원을 취소하시겠습니까?')) {
+                    try {
+                      await applicationApi.cancel(application.applicationId);
+                      alert('지원이 취소되었습니다.');
+                      window.location.href = '/profile';
+                    } catch (e) {
+                      alert('지원 취소에 실패했습니다.');
+                    }
+                  }
+                }}
+                className="w-full px-6 py-4 bg-neutral-100 text-neutral-600 rounded-xl font-bold hover:bg-neutral-200 transition-all flex items-center justify-center gap-2"
+              >
+                <XCircle className="w-5 h-5" />
+                지원 취소
               </button>
             </div>
           )}
