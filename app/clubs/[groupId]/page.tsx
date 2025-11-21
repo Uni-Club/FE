@@ -145,7 +145,7 @@ export default function ClubDetailPage() {
           >
             <MessageCircle className="w-8 h-8 text-cyan-500 mx-auto mb-3" />
             <div className="font-display font-bold text-3xl text-neutral-900 mb-1">
-              2개
+              {club.boardCount ?? '-'}개
             </div>
             <div className="text-neutral-600">운영 중인 게시판</div>
           </motion.div>
