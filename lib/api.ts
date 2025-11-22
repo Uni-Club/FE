@@ -311,7 +311,7 @@ export const boardApi = {
     fetchApi(`/groups/${groupId}/boards/${boardId}`),
 
   // 게시판 생성
-  create: (groupId: number, data: { name: string; description?: string; boardType: string }) =>
+  create: (groupId: number, data: { name: string; boardType: string; visibility?: 'PUBLIC' | 'GROUP_ONLY' }) =>
     fetchApi(`/groups/${groupId}/boards`, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -335,14 +335,14 @@ export const postApi = {
     fetchApi(`/posts/${postId}`),
 
   // 게시글 작성
-  create: (boardId: number, data: { title: string; content: string }) =>
+  create: (boardId: number, data: { title: string; content: string; isNotice?: boolean; isPinned?: boolean; pinnedUntil?: string }) =>
     fetchApi(`/boards/${boardId}/posts`, {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
   // 게시글 수정
-  update: (postId: number, data: { title?: string; content?: string }) =>
+  update: (postId: number, data: { title?: string; content?: string; isNotice?: boolean; isPinned?: boolean; pinnedUntil?: string }) =>
     fetchApi(`/posts/${postId}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
