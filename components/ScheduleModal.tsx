@@ -15,9 +15,7 @@ export default function ScheduleModal({ isOpen, onClose, onSubmit, initialData }
     const [formData, setFormData] = useState({
         title: '',
         description: '',
-        startAt: '',
-        endAt: '',
-        location: '',
+        date: '',
     });
 
     useEffect(() => {
@@ -25,17 +23,13 @@ export default function ScheduleModal({ isOpen, onClose, onSubmit, initialData }
             setFormData({
                 title: initialData.title,
                 description: initialData.description,
-                startAt: initialData.startAt,
-                endAt: initialData.endAt,
-                location: initialData.location,
+                date: initialData.date,
             });
         } else {
             setFormData({
                 title: '',
                 description: '',
-                startAt: '',
-                endAt: '',
-                location: '',
+                date: '',
             });
         }
     }, [initialData, isOpen]);
@@ -102,44 +96,16 @@ export default function ScheduleModal({ isOpen, onClose, onSubmit, initialData }
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                                        시작 시간
-                                    </label>
-                                    <input
-                                        type="datetime-local"
-                                        required
-                                        value={formData.startAt}
-                                        onChange={(e) => setFormData({ ...formData, startAt: e.target.value })}
-                                        className="w-full px-4 py-2 rounded-xl border border-neutral-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 outline-none transition-all"
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                                        종료 시간
-                                    </label>
-                                    <input
-                                        type="datetime-local"
-                                        required
-                                        value={formData.endAt}
-                                        onChange={(e) => setFormData({ ...formData, endAt: e.target.value })}
-                                        className="w-full px-4 py-2 rounded-xl border border-neutral-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 outline-none transition-all"
-                                    />
-                                </div>
-                            </div>
-
                             <div>
                                 <label className="block text-sm font-medium text-neutral-700 mb-1">
-                                    장소
+                                    일정 날짜 및 시간
                                 </label>
                                 <input
-                                    type="text"
+                                    type="datetime-local"
                                     required
-                                    value={formData.location}
-                                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                    value={formData.date}
+                                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                                     className="w-full px-4 py-2 rounded-xl border border-neutral-200 focus:border-sky-500 focus:ring-2 focus:ring-sky-200 outline-none transition-all"
-                                    placeholder="장소를 입력하세요"
                                 />
                             </div>
 

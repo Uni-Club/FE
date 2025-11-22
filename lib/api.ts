@@ -349,38 +349,30 @@ export const postApi = {
 // 일정 API
 export const scheduleApi = {
   // 일정 목록 조회
-  getByGroup: (groupId: number, params?: { month?: string; year?: string }) =>
-    fetchApi<any[]>(`/groups/${groupId}/schedules?` + new URLSearchParams(params as any).toString()),
+  getByGroup: (groupId: number) =>
+    fetchApi<any[]>(`/groups/${groupId}/schedules`),
 
   // 일정 상세 조회
-  getById: (groupId: number, scheduleId: number) =>
-    fetchApi(`/groups/${groupId}/schedules/${scheduleId}`),
+  getById: (scheduleId: number) =>
+    fetchApi(`/schedules/${scheduleId}`),
 
   // 일정 생성
-  create: (groupId: number, data: { title: string; description?: string; startAt: string; endAt: string; location?: string }) =>
-    fetchApi(`/groups/${groupId}/schedules`, {
+  create: (data: { groupId: number; title: string; description?: string; date: string }) =>
+    fetchApi('/schedules', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
   // 일정 수정
-  update: (groupId: number, scheduleId: number, data: { title?: string; description?: string; startAt?: string; endAt?: string; location?: string }) =>
-    fetchApi(`/groups/${groupId}/schedules/${scheduleId}`, {
+  update: (scheduleId: number, data: { title?: string; description?: string; date?: string }) =>
+    fetchApi(`/schedules/${scheduleId}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
 
   // 일정 삭제
-  delete: (groupId: number, scheduleId: number) =>
-    fetchApi(`/groups/${groupId}/schedules/${scheduleId}`, { method: 'DELETE' }),
-
-  // 참석 신청
-  attend: (groupId: number, scheduleId: number) =>
-    fetchApi(`/groups/${groupId}/schedules/${scheduleId}/attend`, { method: 'POST' }),
-
-  // 참석 취소
-  cancelAttend: (groupId: number, scheduleId: number) =>
-    fetchApi(`/groups/${groupId}/schedules/${scheduleId}/attend`, { method: 'DELETE' }),
+  delete: (scheduleId: number) =>
+    fetchApi(`/schedules/${scheduleId}`, { method: 'DELETE' }),
 };
 
 export default {

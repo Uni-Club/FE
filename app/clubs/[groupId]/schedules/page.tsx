@@ -1,7 +1,7 @@
 'use client';
 
 import { useParams } from 'next/navigation';
-import { Calendar, Clock, MapPin, Users, PlusCircle, Edit2, Trash2, Loader2 } from 'lucide-react';
+import { Calendar, Clock, PlusCircle, Edit2, Trash2, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import ScheduleModal from '@/components/ScheduleModal';
@@ -11,10 +11,7 @@ interface Schedule {
   scheduleId: number;
   title: string;
   description: string;
-  startAt: string;
-  endAt: string;
-  location: string;
-  attendees: number;
+  date: string;
 }
 
 export default function SchedulesPage() {
@@ -49,7 +46,7 @@ export default function SchedulesPage() {
 
   const handleCreate = async (data: any) => {
     try {
-      const response = await scheduleApi.create(Number(groupId), data);
+      const response = await scheduleApi.create({ ...data, groupId: Number(groupId) });
       if (response.success) {
         await fetchSchedules();
         setIsModalOpen(false);
@@ -64,7 +61,7 @@ export default function SchedulesPage() {
   const handleUpdate = async (data: any) => {
     if (!editingSchedule) return;
     try {
-      const response = await scheduleApi.update(Number(groupId), editingSchedule.scheduleId, data);
+      const response = await scheduleApi.update(editingSchedule.scheduleId, data);
       if (response.success) {
         await fetchSchedules();
         setIsModalOpen(false);
@@ -80,7 +77,7 @@ export default function SchedulesPage() {
   const handleDelete = async (id: number) => {
     if (!confirm('일정을 삭제하시겠습니까?')) return;
     try {
-      const response = await scheduleApi.delete(Number(groupId), id);
+      const response = await scheduleApi.delete(id);
       if (response.success) {
         await fetchSchedules();
       } else {
@@ -88,20 +85,6 @@ export default function SchedulesPage() {
       }
     } catch (err) {
       alert('삭제 중 오류가 발생했습니다.');
-    }
-  };
-
-  const handleAttend = async (scheduleId: number) => {
-    try {
-      const response = await scheduleApi.attend(Number(groupId), scheduleId);
-      if (response.success) {
-        await fetchSchedules();
-        alert('참석 신청이 완료되었습니다.');
-      } else {
-        alert(response.error?.message || '참석 신청에 실패했습니다.');
-      }
-    } catch (err) {
-      alert('참석 신청 중 오류가 발생했습니다.');
     }
   };
 
@@ -186,7 +169,7 @@ export default function SchedulesPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="px-3 py-1 bg-sky-50 text-sky-600 text-xs rounded-full font-semibold">
-                      {new Date(schedule.startAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                      {new Date(schedule.date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
                     </span>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
@@ -216,26 +199,16 @@ export default function SchedulesPage() {
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4" />
                     <span>
-                      {new Date(schedule.startAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })} -
-                      {new Date(schedule.endAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(schedule.date).toLocaleString('ko-KR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
                     </span>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    <span>{schedule.location}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users className="w-4 h-4" />
-                    <span>{schedule.attendees}명 참석 예정</span>
-                  </div>
                 </div>
-
-                <button
-                  onClick={() => handleAttend(schedule.scheduleId)}
-                  className="w-full mt-4 px-4 py-2 bg-sky-50 text-sky-600 rounded-lg font-medium hover:bg-sky-100 transition-all"
-                >
-                  참석 신청
-                </button>
               </motion.div>
             ))}
           </div>
