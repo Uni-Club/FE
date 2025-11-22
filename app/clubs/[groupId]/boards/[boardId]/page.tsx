@@ -41,7 +41,7 @@ export default function BoardDetailPage() {
         setLoading(true);
         const [boardRes, postsRes] = await Promise.all([
           boardApi.getById(Number(groupId), Number(boardId)),
-          postApi.getByBoard(Number(groupId), Number(boardId), { keyword: searchQuery }),
+          postApi.getByBoard(Number(boardId), { keyword: searchQuery }),
         ]);
 
         if (boardRes.success && boardRes.data) {

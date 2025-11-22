@@ -39,7 +39,7 @@ export default function PostDetailPage() {
     const fetchPost = async () => {
       try {
         setLoading(true);
-        const response = await postApi.getById(Number(groupId), Number(boardId), Number(postId));
+        const response = await postApi.getById(Number(postId));
         if (response.success && response.data) {
           setPost(response.data as Post);
         } else {
@@ -53,14 +53,14 @@ export default function PostDetailPage() {
     };
 
     fetchPost();
-  }, [groupId, boardId, postId]);
+  }, [postId]);
 
   const handleDelete = async () => {
     if (!confirm('정말 삭제하시겠습니까?')) return;
 
     try {
       setDeleting(true);
-      const response = await postApi.delete(Number(groupId), Number(boardId), Number(postId));
+      const response = await postApi.delete(Number(postId));
       if (response.success) {
         alert('게시글이 삭제되었습니다.');
         router.push(`/clubs/${groupId}/boards/${boardId}`);

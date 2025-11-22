@@ -85,6 +85,13 @@ export const authApi = {
 
   // 로그아웃
   logout: () => fetchApi('/auth/logout', { method: 'POST' }),
+
+  // 토큰 갱신
+  refresh: (refreshToken: string) =>
+    fetchApi('/auth/refresh', {
+      method: 'POST',
+      body: JSON.stringify({ refreshToken }),
+    }),
 };
 
 // 사용자 API
@@ -111,7 +118,7 @@ export const userApi = {
 
   // 내 지원 내역
   getMyApplications: (status?: string) =>
-    fetchApi(`/applications/my${status ? `?status=${status}` : ''}`),
+    fetchApi(`/users/me/applications${status ? `?status=${status}` : ''}`),
 };
 
 // 학교 API
@@ -318,32 +325,32 @@ export const boardApi = {
 // 게시글 API
 export const postApi = {
   // 게시글 목록 조회
-  getByBoard: (groupId: number, boardId: number, params?: { page?: number; size?: number; keyword?: string }) =>
+  getByBoard: (boardId: number, params?: { page?: number; size?: number; keyword?: string }) =>
     fetchApi<PageResponse<any>>(
-      `/groups/${groupId}/boards/${boardId}/posts?` + new URLSearchParams(params as any).toString()
+      `/boards/${boardId}/posts?` + new URLSearchParams(params as any).toString()
     ),
 
   // 게시글 상세 조회
-  getById: (groupId: number, boardId: number, postId: number) =>
-    fetchApi(`/groups/${groupId}/boards/${boardId}/posts/${postId}`),
+  getById: (postId: number) =>
+    fetchApi(`/posts/${postId}`),
 
   // 게시글 작성
-  create: (groupId: number, boardId: number, data: { title: string; content: string }) =>
-    fetchApi(`/groups/${groupId}/boards/${boardId}/posts`, {
+  create: (boardId: number, data: { title: string; content: string }) =>
+    fetchApi(`/boards/${boardId}/posts`, {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
   // 게시글 수정
-  update: (groupId: number, boardId: number, postId: number, data: { title?: string; content?: string }) =>
-    fetchApi(`/groups/${groupId}/boards/${boardId}/posts/${postId}`, {
+  update: (postId: number, data: { title?: string; content?: string }) =>
+    fetchApi(`/posts/${postId}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
 
   // 게시글 삭제
-  delete: (groupId: number, boardId: number, postId: number) =>
-    fetchApi(`/groups/${groupId}/boards/${boardId}/posts/${postId}`, { method: 'DELETE' }),
+  delete: (postId: number) =>
+    fetchApi(`/posts/${postId}`, { method: 'DELETE' }),
 };
 
 // 일정 API

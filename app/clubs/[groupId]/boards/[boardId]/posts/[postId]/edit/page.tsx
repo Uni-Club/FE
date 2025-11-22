@@ -22,7 +22,7 @@ export default function EditPostPage() {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const response = await postApi.getById(Number(groupId), Number(boardId), Number(postId));
+        const response = await postApi.getById(Number(postId));
         if (response.success && response.data) {
           const post = response.data as any;
           setTitle(post.title);
@@ -38,7 +38,7 @@ export default function EditPostPage() {
     };
 
     fetchPost();
-  }, [groupId, boardId, postId]);
+  }, [postId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +46,7 @@ export default function EditPostPage() {
     setError(null);
 
     try {
-      const response = await postApi.update(Number(groupId), Number(boardId), Number(postId), { title, content });
+      const response = await postApi.update(Number(postId), { title, content });
       if (response.success) {
         alert('게시글이 수정되었습니다!');
         router.push(`/clubs/${groupId}/boards/${boardId}/posts/${postId}`);

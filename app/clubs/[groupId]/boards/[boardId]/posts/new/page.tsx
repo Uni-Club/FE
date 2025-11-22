@@ -23,7 +23,7 @@ export default function NewPostPage() {
     setError(null);
 
     try {
-      const response = await postApi.create(Number(groupId), Number(boardId), { title, content });
+      const response = await postApi.create(Number(boardId), { title, content });
       if (response.success) {
         alert('게시글이 작성되었습니다!');
         router.push(`/clubs/${groupId}/boards/${boardId}`);
