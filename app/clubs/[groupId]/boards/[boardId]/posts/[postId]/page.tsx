@@ -3,9 +3,9 @@
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { User, Calendar, Eye, Edit, Trash, Loader2 } from 'lucide-react';
+import { User, Calendar, Eye, Edit, Trash, Loader2, MessageSquare, Send } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { postApi } from '@/lib/api';
+import { postApi, commentApi } from '@/lib/api';
 
 interface Post {
   postId: number;
@@ -23,6 +23,18 @@ interface Post {
   isNotice: boolean;
 }
 
+interface Comment {
+  commentId: number;
+  content: string;
+  author: {
+    userId: number;
+    name: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+  parentId: number | null;
+}
+
 export default function PostDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -34,6 +46,10 @@ export default function PostDetailPage() {
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [comments, setComments] = useState<Comment[]>([]);
+  const [commentContent, setCommentContent] = useState('');
+  const [submittingComment, setSubmittingComment] = useState(false);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -54,6 +70,64 @@ export default function PostDetailPage() {
 
     fetchPost();
   }, [postId]);
+
+  useEffect(() => {
+    const fetchComments = async () => {
+      try {
+        const response = await commentApi.getByPost(Number(postId));
+        if (response.success && response.data) {
+          setComments(response.data);
+        }
+      } catch (err) {
+        console.error('Failed to fetch comments:', err);
+      }
+    };
+
+    if (postId) {
+      fetchComments();
+    }
+  }, [postId]);
+
+  const handleCommentSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!commentContent.trim()) return;
+
+    try {
+      setSubmittingComment(true);
+      const response = await commentApi.create(Number(postId), { content: commentContent });
+      if (response.success) {
+        setCommentContent('');
+        const refreshResponse = await commentApi.getByPost(Number(postId));
+        if (refreshResponse.success && refreshResponse.data) {
+          setComments(refreshResponse.data);
+        }
+      } else {
+        alert(response.error?.message || '댓글 작성에 실패했습니다.');
+      }
+    } catch (err) {
+      alert('댓글 작성 중 오류가 발생했습니다.');
+    } finally {
+      setSubmittingComment(false);
+    }
+  };
+
+  const handleCommentDelete = async (commentId: number) => {
+    if (!confirm('댓글을 삭제하시겠습니까?')) return;
+
+    try {
+      const response = await commentApi.delete(commentId);
+      if (response.success) {
+        const refreshResponse = await commentApi.getByPost(Number(postId));
+        if (refreshResponse.success && refreshResponse.data) {
+          setComments(refreshResponse.data);
+        }
+      } else {
+        alert(response.error?.message || '댓글 삭제에 실패했습니다.');
+      }
+    } catch (err) {
+      alert('댓글 삭제 중 오류가 발생했습니다.');
+    }
+  };
 
   const handleDelete = async () => {
     if (!confirm('정말 삭제하시겠습니까?')) return;
@@ -176,6 +250,65 @@ export default function PostDetailPage() {
             </button>
           </div>
         </motion.div>
+
+        {/* 댓글 섹션 */}
+        <div className="bg-white rounded-2xl p-8 border border-neutral-200 mb-6">
+          <div className="flex items-center gap-2 mb-6">
+            <MessageSquare className="w-5 h-5 text-neutral-700" />
+            <h2 className="font-bold text-xl text-neutral-900">
+              댓글 <span className="text-sky-500">{comments.length}</span>
+            </h2>
+          </div>
+
+          {/* 댓글 작성 폼 */}
+          <form onSubmit={handleCommentSubmit} className="mb-8">
+            <textarea
+              value={commentContent}
+              onChange={(e) => setCommentContent(e.target.value)}
+              placeholder="댓글을 입력하세요"
+              rows={3}
+              className="w-full px-4 py-3 bg-neutral-50 rounded-xl border border-neutral-200 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100 transition-all resize-none"
+            />
+            <div className="flex justify-end mt-3">
+              <button
+                type="submit"
+                disabled={submittingComment || !commentContent.trim()}
+                className="px-6 py-2 bg-sky-500 text-white rounded-lg font-medium hover:bg-sky-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              >
+                <Send className="w-4 h-4" />
+                {submittingComment ? '작성 중...' : '댓글 작성'}
+              </button>
+            </div>
+          </form>
+
+          {/* 댓글 목록 */}
+          <div className="space-y-4">
+            {comments.length === 0 ? (
+              <p className="text-center text-neutral-500 py-8">첫 댓글을 작성해보세요!</p>
+            ) : (
+              comments.map((comment) => (
+                <div key={comment.commentId} className="p-4 bg-neutral-50 rounded-xl">
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-neutral-500" />
+                      <span className="font-medium text-neutral-900">{comment.author.name}</span>
+                      <span className="text-sm text-neutral-500">
+                        {new Date(comment.createdAt).toLocaleString('ko-KR')}
+                      </span>
+                    </div>
+                    <button
+                      onClick={() => handleCommentDelete(comment.commentId)}
+                      className="text-sm text-red-500 hover:text-red-600"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                  <p className="text-neutral-700 whitespace-pre-wrap">{comment.content}</p>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
 
         <div className="bg-white rounded-xl p-4 border border-neutral-200">
           <div className="flex items-center justify-between">

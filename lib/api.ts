@@ -353,6 +353,31 @@ export const postApi = {
     fetchApi(`/posts/${postId}`, { method: 'DELETE' }),
 };
 
+// 댓글 API
+export const commentApi = {
+  // 게시글의 댓글 목록 조회
+  getByPost: (postId: number) =>
+    fetchApi<any[]>(`/posts/${postId}/comments`),
+
+  // 댓글 작성
+  create: (postId: number, data: { content: string; parentId?: number }) =>
+    fetchApi(`/posts/${postId}/comments`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    }),
+
+  // 댓글 수정
+  update: (commentId: number, data: { content: string }) =>
+    fetchApi(`/comments/${commentId}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
+
+  // 댓글 삭제
+  delete: (commentId: number) =>
+    fetchApi(`/comments/${commentId}`, { method: 'DELETE' }),
+};
+
 // 일정 API
 export const scheduleApi = {
   // 일정 목록 조회
@@ -391,5 +416,6 @@ export default {
   application: applicationApi,
   board: boardApi,
   post: postApi,
+  comment: commentApi,
   schedule: scheduleApi,
 };
