@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Search, Filter, SlidersHorizontal } from 'lucide-react';
+import { Search, Filter, List, Grid3X3, ChevronDown } from 'lucide-react';
 import ClubCard from '@/components/ClubCard';
 import Loading from '@/components/Loading';
 import ErrorMessage from '@/components/ErrorMessage';
 import { groupApi } from '@/lib/api';
 
-const categories = ['전체', 'IT/프로그래밍', '예술/문화', '스포츠', '봉사'];
+const categories = ['전체', 'IT/개발', '예술/문화', '스포츠', '봉사', '학술', '친목'];
 
 export default function ClubsPage() {
   const [clubs, setClubs] = useState<any[]>([]);
@@ -15,6 +15,8 @@ export default function ClubsPage() {
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('전체');
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+  const [sortBy, setSortBy] = useState('latest');
 
   useEffect(() => {
     loadClubs();
@@ -42,7 +44,8 @@ export default function ClubsPage() {
     }
   };
 
-  const handleSearch = () => {
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
     loadClubs();
   };
 
@@ -58,49 +61,52 @@ export default function ClubsPage() {
   if (loading) return <Loading />;
 
   return (
-    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-neutral-50">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-12">
-          <h1 className="font-display font-bold text-5xl sm:text-6xl mb-4 text-neutral-900">
-            동아리 <span className="text-gradient">탐색</span>
-          </h1>
-          <p className="text-xl text-neutral-600">
-            {filteredClubs.length}개의 동아리가 여러분을 기다리고 있습니다
+    <main className="pt-20 pb-12 px-4 sm:px-6 lg:px-8 min-h-screen bg-gray-50">
+      <div className="max-w-6xl mx-auto">
+        {/* 헤더 */}
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">동아리 찾기</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            총 {filteredClubs.length}개의 동아리
           </p>
         </div>
 
-        {/* Error Message */}
+        {/* 에러 메시지 */}
         {error && <ErrorMessage message={error} />}
 
-        {/* Search and Filters */}
-        <div className="mb-8 space-y-4">
-          {/* Search Bar */}
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400" />
-            <input
-              type="text"
-              placeholder="동아리명이나 설명으로 검색하세요..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-4 bg-white rounded-2xl border border-neutral-200 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100 transition-all font-medium text-neutral-900 placeholder:text-neutral-400"
-            />
-          </div>
-
-          {/* Category Filters */}
-          <div className="flex items-center gap-3 overflow-x-auto pb-2">
-            <div className="flex items-center gap-2 text-neutral-600 flex-shrink-0">
-              <Filter className="w-5 h-5" />
-              <span className="font-medium">필터:</span>
+        {/* 검색 & 필터 영역 */}
+        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+          {/* 검색바 */}
+          <form onSubmit={handleSearch} className="mb-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="동아리명, 활동 내용 검색"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-20 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-blue-500"
+              />
+              <button
+                type="submit"
+                className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 bg-blue-500 text-white text-sm rounded-md hover:bg-blue-600"
+              >
+                검색
+              </button>
             </div>
+          </form>
+
+          {/* 카테고리 필터 */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2">
+            <Filter className="w-4 h-4 text-gray-400 flex-shrink-0" />
             {categories.map((category) => (
               <button
                 key={category}
                 onClick={() => setSelectedCategory(category)}
-                className={`px-4 py-2 rounded-xl font-medium transition-all whitespace-nowrap ${
+                className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap transition-colors ${
                   selectedCategory === category
-                    ? 'bg-sky-500 text-white shadow-primary'
-                    : 'bg-white text-neutral-700 hover:bg-neutral-100 border border-neutral-200'
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
                 {category}
@@ -109,33 +115,67 @@ export default function ClubsPage() {
           </div>
         </div>
 
-        {/* Results Count */}
-        <div className="mb-6 flex items-center justify-between">
-          <p className="text-neutral-600">
-            <span className="font-bold text-sky-500">{filteredClubs.length}</span>개의 동아리
-          </p>
-          <button className="flex items-center gap-2 px-4 py-2 text-neutral-700 hover:text-sky-500 transition-colors">
-            <SlidersHorizontal className="w-4 h-4" />
-            <span className="text-sm font-medium">정렬</span>
-          </button>
+        {/* 정렬 & 뷰 모드 */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setSortBy('latest')}
+              className={`text-sm ${sortBy === 'latest' ? 'text-blue-500 font-medium' : 'text-gray-500'}`}
+            >
+              최신순
+            </button>
+            <span className="text-gray-300">|</span>
+            <button
+              onClick={() => setSortBy('popular')}
+              className={`text-sm ${sortBy === 'popular' ? 'text-blue-500 font-medium' : 'text-gray-500'}`}
+            >
+              인기순
+            </button>
+            <span className="text-gray-300">|</span>
+            <button
+              onClick={() => setSortBy('members')}
+              className={`text-sm ${sortBy === 'members' ? 'text-blue-500 font-medium' : 'text-gray-500'}`}
+            >
+              멤버순
+            </button>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-1.5 rounded ${viewMode === 'grid' ? 'bg-gray-100' : ''}`}
+            >
+              <Grid3X3 className={`w-4 h-4 ${viewMode === 'grid' ? 'text-blue-500' : 'text-gray-400'}`} />
+            </button>
+            <button
+              onClick={() => setViewMode('list')}
+              className={`p-1.5 rounded ${viewMode === 'list' ? 'bg-gray-100' : ''}`}
+            >
+              <List className={`w-4 h-4 ${viewMode === 'list' ? 'text-blue-500' : 'text-gray-400'}`} />
+            </button>
+          </div>
         </div>
 
-        {/* Clubs Grid */}
+        {/* 동아리 목록 */}
         {filteredClubs.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className={
+            viewMode === 'grid'
+              ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4'
+              : 'space-y-3'
+          }>
             {filteredClubs.map((club, index) => (
               <ClubCard key={club.groupId} club={club} index={index} />
             ))}
           </div>
         ) : (
-          <div className="text-center py-20">
-            <div className="w-20 h-20 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Search className="w-10 h-10 text-neutral-400" />
+          <div className="text-center py-16 bg-white rounded-lg border border-gray-200">
+            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <Search className="w-6 h-6 text-gray-400" />
             </div>
-            <h3 className="font-display font-bold text-2xl text-neutral-900 mb-2">
+            <h3 className="font-medium text-gray-900 mb-1">
               검색 결과가 없습니다
             </h3>
-            <p className="text-neutral-600">
+            <p className="text-sm text-gray-500">
               다른 검색어나 필터를 시도해보세요
             </p>
           </div>

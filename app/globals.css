@@ -1,175 +1,87 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Manrope:wght@400;500;600;700&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    /* UNICLUB Colors - Notion + Umami Hybrid Palette */
-    --sky-50: #E6F7FF;
-    --sky-100: #BAE7FF;
-    --sky-500: #1890FF;
-    --sky-600: #096DD9;
-    --neutral-50: #F7F8FA;
-    --neutral-100: #F1F3F5;
-    --neutral-200: #E9ECEF;
-    --neutral-600: #868E96;
-    --neutral-700: #495057;
-    --neutral-900: #212529;
-
-    /* shadcn/ui Variables (mapped to new UNICLUB colors) */
-    --background: 216 50% 98%; /* neutral-50 */
-    --foreground: 210 11% 15%; /* neutral-900 */
-    --card: 0 0% 100%; /* white */
-    --card-foreground: 210 11% 15%; /* neutral-900 */
+    /* 기본 색상 - 단순화 */
+    --background: 0 0% 100%;
+    --foreground: 220 9% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 9% 20%;
     --popover: 0 0% 100%;
-    --popover-foreground: 210 11% 15%;
-    --primary: 207 100% 54%; /* sky-500 */
+    --popover-foreground: 220 9% 20%;
+    --primary: 217 91% 60%; /* blue-500 */
     --primary-foreground: 0 0% 100%;
-    --secondary: 218 17% 35%; /* neutral-600 */
-    --secondary-foreground: 0 0% 100%;
-    --muted: 216 50% 97%; /* neutral-100 */
-    --muted-foreground: 210 14% 53%;
-    --accent: 207 100% 54%; /* sky-500 */
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 220 13% 91%; /* neutral-200 */
+    --secondary: 220 14% 96%;
+    --secondary-foreground: 220 9% 20%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 220 9% 46%;
+    --accent: 220 14% 96%;
+    --accent-foreground: 220 9% 20%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 207 100% 54%; /* sky-500 */
-    --radius: 0.75rem;
-
-    /* Shadows */
-    --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);
-    --shadow-medium: 0 8px 30px rgba(0, 0, 0, 0.08);
-    --shadow-hard: 0 12px 40px rgba(0, 0, 0, 0.12);
+    --ring: 217 91% 60%;
+    --radius: 0.5rem;
   }
 
   .dark {
-    --background: 210 11% 8%; /* neutral-900 */
-    --foreground: 216 50% 98%; /* neutral-50 */
-    --card: 210 11% 15%;
-    --card-foreground: 216 50% 98%;
-    --popover: 210 11% 15%;
-    --popover-foreground: 216 50% 98%;
-    --primary: 207 100% 54%;
+    --background: 220 9% 10%;
+    --foreground: 220 9% 95%;
+    --card: 220 9% 12%;
+    --card-foreground: 220 9% 95%;
+    --popover: 220 9% 12%;
+    --popover-foreground: 220 9% 95%;
+    --primary: 217 91% 60%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 218 17% 35%;
-    --secondary-foreground: 0 0% 100%;
-    --muted: 210 11% 20%;
-    --muted-foreground: 210 14% 71%;
-    --accent: 207 100% 54%;
-    --accent-foreground: 0 0% 100%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 210 11% 20%;
-    --input: 210 11% 20%;
-    --ring: 207 100% 54%;
+    --secondary: 220 9% 18%;
+    --secondary-foreground: 220 9% 95%;
+    --muted: 220 9% 18%;
+    --muted-foreground: 220 9% 65%;
+    --accent: 220 9% 18%;
+    --accent-foreground: 220 9% 95%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 220 9% 18%;
+    --input: 220 9% 18%;
+    --ring: 217 91% 60%;
   }
 }
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-body);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden;
-}
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
-  font-weight: 700;
-  line-height: 1.2;
-}
-
-/* Smooth scroll behavior */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Selection styling */
-::selection {
-  background: var(--sky-100);
-  color: var(--neutral-900);
-}
-
-/* Custom scrollbar */
+/* 스크롤바 - 심플하게 */
 ::-webkit-scrollbar {
-  width: 12px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--neutral-100);
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--sky-500);
-  border-radius: 6px;
+  background: #d1d5db;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--sky-600);
+  background: #9ca3af;
 }
 
-/* Animations */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(-30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-.animate-fade-in-up {
-  animation: fadeInUp 0.6s ease-out forwards;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.5s ease-out forwards;
-}
-
-.animate-slide-in-right {
-  animation: slideInRight 0.6s ease-out forwards;
-}
-
-/* Utility classes */
-.text-gradient {
-  background: linear-gradient(135deg, var(--sky-500) 0%, var(--sky-600) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* 포커스 링 */
+:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
 }

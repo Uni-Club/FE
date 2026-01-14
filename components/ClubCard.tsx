@@ -1,8 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Users, MapPin, ArrowRight } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Users, MapPin, ChevronRight } from 'lucide-react';
 
 interface ClubCardProps {
   club: {
@@ -16,83 +15,67 @@ interface ClubCardProps {
     memberCount: number;
     category?: string;
     tags?: string[];
+    isRecruiting?: boolean;
   };
   index?: number;
 }
 
-export default function ClubCard({ club, index = 0 }: ClubCardProps) {
-  // Generate a color based on category - Notion + Umami style
-  const getCategoryColor = (category?: string) => {
-    if (!category) return 'bg-sky-100 text-sky-600';
+const categoryColors: Record<string, string> = {
+  'IT/프로그래밍': 'bg-blue-100 text-blue-600',
+  'IT/개발': 'bg-blue-100 text-blue-600',
+  '예술/문화': 'bg-purple-100 text-purple-600',
+  '스포츠': 'bg-green-100 text-green-600',
+  '봉사': 'bg-orange-100 text-orange-600',
+  '학술': 'bg-yellow-100 text-yellow-700',
+  '친목': 'bg-pink-100 text-pink-600',
+};
 
-    const colors: Record<string, string> = {
-      'IT/프로그래밍': 'bg-sky-100 text-sky-600',
-      '예술/문화': 'bg-purple-100 text-purple-600',
-      '스포츠': 'bg-red-100 text-red-600',
-      '봉사': 'bg-green-100 text-green-600',
-      '학술': 'bg-amber-100 text-amber-600',
-    };
-
-    return colors[category] || 'bg-sky-100 text-sky-600';
-  };
+export default function ClubCard({ club }: ClubCardProps) {
+  const schoolName = club.schoolName || club.school?.schoolName || '';
+  const categoryColor = categoryColors[club.category || ''] || 'bg-gray-100 text-gray-600';
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.1 }}
-    >
-      <Link href={`/clubs/${club.groupId}`}>
-        <div className="group bg-white rounded-2xl p-6 hover:shadow-soft-lg transition-all duration-300 border border-neutral-200 hover:border-sky-200">
-          {/* Header */}
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex-1">
-              <h3 className="font-display font-bold text-2xl text-neutral-900 mb-2 group-hover:text-sky-500 transition-colors">
-                {club.groupName}
-              </h3>
-              <div className="flex items-center gap-2 text-sm text-neutral-600">
-                <MapPin className="w-4 h-4" />
-                <span>{club.schoolName || club.school?.schoolName}</span>
-              </div>
-            </div>
-            <div className="w-10 h-10 bg-sky-100 rounded-xl flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-sky-400 group-hover:to-sky-600 group-hover:scale-110 transition-all">
-              <ArrowRight className="w-5 h-5 text-sky-500 group-hover:text-white transition-colors" />
-            </div>
-          </div>
-
-          {/* Description */}
-          <p className="text-neutral-600 mb-4 line-clamp-2 leading-relaxed">
-            {club.description}
-          </p>
-
-          {/* Tags */}
-          {club.tags && club.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {club.tags.slice(0, 3).map((tag, i) => (
-                <span
-                  key={i}
-                  className="px-3 py-1 bg-neutral-100 text-neutral-700 text-xs rounded-full font-medium"
-                >
-                  #{tag}
-                </span>
-              ))}
-            </div>
+    <Link href={`/clubs/${club.groupId}`}>
+      <div className="bg-white rounded-lg border border-gray-200 p-4 hover:border-blue-300 hover:shadow-md transition-all">
+        {/* 상단: 카테고리 + 모집중 뱃지 */}
+        <div className="flex items-center justify-between mb-3">
+          {club.category && (
+            <span className={`px-2 py-0.5 text-xs font-medium rounded ${categoryColor}`}>
+              {club.category}
+            </span>
           )}
-
-          {/* Footer */}
-          <div className="flex items-center justify-between pt-4 border-t border-neutral-200">
-            <div className="flex items-center gap-2 text-neutral-600">
-              <Users className="w-4 h-4" />
-              <span className="text-sm font-medium">{club.memberCount}명 활동중</span>
-            </div>
-            {club.category && (
-              <span className={`px-3 py-1 text-xs rounded-full font-semibold ${getCategoryColor(club.category)}`}>
-                {club.category}
-              </span>
-            )}
-          </div>
+          {club.isRecruiting && (
+            <span className="px-2 py-0.5 text-xs font-medium rounded bg-red-50 text-red-500">
+              모집중
+            </span>
+          )}
         </div>
-      </Link>
-    </motion.div>
+
+        {/* 동아리명 */}
+        <h3 className="font-bold text-lg text-gray-900 mb-1 line-clamp-1">
+          {club.groupName}
+        </h3>
+
+        {/* 학교 */}
+        <div className="flex items-center gap-1 text-sm text-gray-500 mb-2">
+          <MapPin className="w-3.5 h-3.5" />
+          <span>{schoolName}</span>
+        </div>
+
+        {/* 설명 */}
+        <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+          {club.description}
+        </p>
+
+        {/* 하단: 멤버 수 + 화살표 */}
+        <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+          <div className="flex items-center gap-1.5 text-gray-500">
+            <Users className="w-4 h-4" />
+            <span className="text-sm">{club.memberCount}명</span>
+          </div>
+          <ChevronRight className="w-5 h-5 text-gray-400" />
+        </div>
+      </div>
+    </Link>
   );
 }
