@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Mail, Lock, User, Phone, School, ArrowRight, Check } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { useRouter } from 'next/navigation';
+import { Mail, Lock, User, Phone, Eye, EyeOff, ChevronDown } from 'lucide-react';
+import { authApi, schoolApi } from '@/lib/api';
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -15,11 +16,58 @@ export default function SignupPage() {
     studentId: '',
     schoolId: '',
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [schools, setSchools] = useState<any[]>([]);
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    loadSchools();
+  }, []);
+
+  const loadSchools = async () => {
+    try {
+      const response = await schoolApi.search({ page: 0, size: 100 });
+      if (response.data) {
+        setSchools(response.data.content || []);
+      }
+    } catch (err) {
+      console.error('Failed to load schools:', err);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // API 연동 로직 추가
-    console.log('Signup:', formData);
+    setError('');
+
+    if (formData.password !== formData.confirmPassword) {
+      setError('비밀번호가 일치하지 않습니다');
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      setError('비밀번호는 8자 이상이어야 합니다');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await authApi.signup({
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
+        phone: formData.phone || undefined,
+        studentId: formData.studentId || undefined,
+        schoolId: formData.schoolId ? Number(formData.schoolId) : undefined,
+      });
+      router.push('/auth/login?registered=true');
+    } catch (err: any) {
+      setError(err.message || '회원가입에 실패했습니다');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -30,222 +78,190 @@ export default function SignupPage() {
   };
 
   return (
-    <main className="min-h-screen pt-20 pb-12 px-4 sm:px-6 lg:px-8 flex items-center justify-center">
-      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-12 items-center">
-        {/* Left: Benefits */}
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6 }}
-          className="hidden lg:block"
-        >
-          <h1 className="font-display font-bold text-6xl mb-6 leading-tight">
-            지금 가입하고<br />
-            <span className="text-gradient">특별한 경험</span>을<br />
-            시작하세요
-          </h1>
-
-          <p className="text-xl text-navy/70 mb-12 leading-relaxed">
-            UNICLUB과 함께 당신의 캠퍼스 라이프를 더욱 풍성하게 만들어보세요.
+    <main className="min-h-screen pt-14 pb-12 flex items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-sm">
+        {/* 헤더 */}
+        <div className="text-center mb-6">
+          <Link href="/" className="inline-flex items-center gap-2 mb-4">
+            <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
+              <span className="text-white font-bold text-lg">U</span>
+            </div>
+          </Link>
+          <h1 className="text-2xl font-bold text-gray-900">회원가입</h1>
+          <p className="text-gray-500 text-sm mt-1">
+            이미 계정이 있으신가요?{' '}
+            <Link href="/auth/login" className="text-blue-500 hover:underline">
+              로그인
+            </Link>
           </p>
+        </div>
 
-          <div className="space-y-6">
-            {[
-              '500개 이상의 동아리 무료 탐색',
-              '실시간 모집공고 알림',
-              '체계적인 동아리 활동 관리',
-              '다양한 학생들과의 네트워킹',
-            ].map((benefit, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 + index * 0.1 }}
-                className="flex items-center gap-4"
-              >
-                <div className="w-10 h-10 bg-gradient-coral rounded-full flex items-center justify-center flex-shrink-0">
-                  <Check className="w-5 h-5 text-white" />
-                </div>
-                <span className="text-lg text-navy font-medium">{benefit}</span>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
+        {/* 폼 */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+              {error}
+            </div>
+          )}
 
-        {/* Right: Signup Form */}
-        <motion.div
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="w-full"
-        >
-          <div className="bg-white rounded-3xl p-8 sm:p-12 shadow-medium">
-            <h2 className="font-display font-bold text-4xl mb-2">회원가입</h2>
-            <p className="text-navy/60 mb-8">
-              이미 계정이 있으신가요?{' '}
-              <Link href="/auth/login" className="text-coral hover:underline font-medium">
-                로그인
-              </Link>
-            </p>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Name */}
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-navy mb-2">
-                  이름
-                </label>
-                <div className="relative">
-                  <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-navy/40" />
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    placeholder="홍길동"
-                    required
-                    className="w-full pl-12 pr-4 py-3.5 bg-sand/30 rounded-xl border border-transparent focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all font-medium text-navy placeholder:text-navy/40"
-                  />
-                </div>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* 이메일 (아이디) */}
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
+                아이디 (이메일) <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="example@university.ac.kr"
+                  required
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                />
               </div>
+              <p className="mt-1 text-xs text-gray-400">로그인 시 사용됩니다</p>
+            </div>
 
-              {/* Email */}
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-navy mb-2">
-                  이메일
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-navy/40" />
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    placeholder="student@university.ac.kr"
-                    required
-                    className="w-full pl-12 pr-4 py-3.5 bg-sand/30 rounded-xl border border-transparent focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all font-medium text-navy placeholder:text-navy/40"
-                  />
-                </div>
+            {/* 이름 (실명) */}
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
+                이름 <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  placeholder="홍길동"
+                  required
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                />
               </div>
+            </div>
 
-              {/* Password */}
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-navy mb-2">
-                  비밀번호
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-navy/40" />
-                  <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    placeholder="8자 이상 (영문, 숫자, 특수문자)"
-                    required
-                    className="w-full pl-12 pr-4 py-3.5 bg-sand/30 rounded-xl border border-transparent focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all font-medium text-navy placeholder:text-navy/40"
-                  />
-                </div>
+            {/* 비밀번호 */}
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
+                비밀번호 <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="8자 이상"
+                  required
+                  className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
               </div>
+            </div>
 
-              {/* Confirm Password */}
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-navy mb-2">
-                  비밀번호 확인
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-navy/40" />
-                  <input
-                    type="password"
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    placeholder="비밀번호를 다시 입력하세요"
-                    required
-                    className="w-full pl-12 pr-4 py-3.5 bg-sand/30 rounded-xl border border-transparent focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all font-medium text-navy placeholder:text-navy/40"
-                  />
-                </div>
+            {/* 비밀번호 확인 */}
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1.5">
+                비밀번호 확인 <span className="text-red-500">*</span>
+              </label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  placeholder="비밀번호 재입력"
+                  required
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                />
               </div>
+            </div>
 
-              {/* Phone (Optional) */}
-              <div>
-                <label htmlFor="phone" className="block text-sm font-medium text-navy mb-2">
-                  전화번호 <span className="text-navy/40">(선택)</span>
-                </label>
-                <div className="relative">
-                  <Phone className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-navy/40" />
-                  <input
-                    type="tel"
-                    id="phone"
-                    name="phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    placeholder="010-1234-5678"
-                    className="w-full pl-12 pr-4 py-3.5 bg-sand/30 rounded-xl border border-transparent focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all font-medium text-navy placeholder:text-navy/40"
-                  />
-                </div>
+            {/* 전화번호 (선택) */}
+            <div>
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1.5">
+                전화번호 <span className="text-gray-400 text-xs">(선택)</span>
+              </label>
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="tel"
+                  id="phone"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="010-1234-5678"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                />
               </div>
+            </div>
 
-              {/* School */}
-              <div>
-                <label htmlFor="schoolId" className="block text-sm font-medium text-navy mb-2">
-                  학교 <span className="text-navy/40">(선택)</span>
-                </label>
-                <div className="relative">
-                  <School className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-navy/40" />
-                  <select
-                    id="schoolId"
-                    name="schoolId"
-                    value={formData.schoolId}
-                    onChange={handleChange}
-                    className="w-full pl-12 pr-4 py-3.5 bg-sand/30 rounded-xl border border-transparent focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all font-medium text-navy"
-                  >
-                    <option value="">학교를 선택하세요</option>
-                    <option value="1">인하대학교</option>
-                    <option value="2">서울대학교</option>
-                    <option value="3">연세대학교</option>
-                    <option value="4">고려대학교</option>
-                  </select>
-                </div>
+            {/* 학교 (선택) */}
+            <div>
+              <label htmlFor="schoolId" className="block text-sm font-medium text-gray-700 mb-1.5">
+                학교 <span className="text-gray-400 text-xs">(선택)</span>
+              </label>
+              <div className="relative">
+                <select
+                  id="schoolId"
+                  name="schoolId"
+                  value={formData.schoolId}
+                  onChange={handleChange}
+                  className="w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm appearance-none bg-white"
+                >
+                  <option value="">학교 선택</option>
+                  {schools.map((school) => (
+                    <option key={school.schoolId} value={school.schoolId}>
+                      {school.schoolName}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
               </div>
+            </div>
 
-              {/* Terms */}
-              <div className="space-y-3">
-                <label className="flex items-start gap-3 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    required
-                    className="mt-1 w-5 h-5 rounded border-navy/20 text-coral focus:ring-coral/20"
-                  />
-                  <span className="text-sm text-navy/70 group-hover:text-navy transition-colors">
-                    <span className="font-medium text-coral">(필수)</span> 이용약관 및 개인정보처리방침에
-                    동의합니다
-                  </span>
-                </label>
-                <label className="flex items-start gap-3 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    className="mt-1 w-5 h-5 rounded border-navy/20 text-coral focus:ring-coral/20"
-                  />
-                  <span className="text-sm text-navy/70 group-hover:text-navy transition-colors">
-                    <span className="font-medium text-navy/50">(선택)</span> 마케팅 정보 수신에 동의합니다
-                  </span>
-                </label>
-              </div>
+            {/* 약관 동의 */}
+            <div className="space-y-2 pt-2">
+              <label className="flex items-start gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  required
+                  className="mt-0.5 w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-600">
+                  <span className="text-red-500">(필수)</span>{' '}
+                  <Link href="/terms" className="text-blue-500 hover:underline">이용약관</Link> 및{' '}
+                  <Link href="/privacy" className="text-blue-500 hover:underline">개인정보처리방침</Link>에 동의합니다
+                </span>
+              </label>
+            </div>
 
-              {/* Submit Button */}
-              <button
-                type="submit"
-                className="w-full px-8 py-4 bg-gradient-coral text-white rounded-xl font-semibold text-lg hover:shadow-xl transform hover:scale-105 transition-all flex items-center justify-center gap-2 group"
-              >
-                가입하기
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </button>
-            </form>
-          </div>
-        </motion.div>
+            {/* 제출 버튼 */}
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full py-2.5 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors mt-4"
+            >
+              {loading ? '가입 중...' : '가입하기'}
+            </button>
+          </form>
+        </div>
       </div>
     </main>
   );
