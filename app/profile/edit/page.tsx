@@ -2,37 +2,47 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion } from 'framer-motion';
-import { userApi } from '@/lib/api';
-import Loading from '@/components/Loading';
-import ErrorMessage from '@/components/ErrorMessage';
+import { User, Phone, GraduationCap, ChevronDown } from 'lucide-react';
+import { userApi, schoolApi } from '@/lib/api';
 
 export default function ProfileEditPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [schools, setSchools] = useState<any[]>([]);
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
     studentId: '',
+    schoolId: '',
   });
 
   useEffect(() => {
-    loadProfile();
+    loadData();
   }, []);
 
-  const loadProfile = async () => {
+  const loadData = async () => {
     try {
       setLoading(true);
-      const response = await userApi.getMe();
-      if (response.success && response.data) {
-        const userData: any = response.data;
+      const [profileRes, schoolsRes] = await Promise.all([
+        userApi.getMe(),
+        schoolApi.search(),
+      ]);
+
+      if (profileRes.success && profileRes.data) {
+        const userData: any = profileRes.data;
         setFormData({
           name: userData.name || '',
           phone: userData.phone || '',
           studentId: userData.studentId || '',
+          schoolId: userData.schoolId?.toString() || '',
         });
+      }
+
+      if (schoolsRes.data) {
+        const data: any = schoolsRes.data;
+        setSchools(data.content || []);
       }
     } catch (err) {
       setError('프로필을 불러오는데 실패했습니다.');
@@ -45,7 +55,13 @@ export default function ProfileEditPage() {
     e.preventDefault();
     try {
       setSubmitting(true);
-      const response = await userApi.updateMe(formData);
+      setError('');
+      const response = await userApi.updateMe({
+        name: formData.name,
+        phone: formData.phone || undefined,
+        studentId: formData.studentId || undefined,
+        schoolId: formData.schoolId ? Number(formData.schoolId) : undefined,
+      });
       if (response.success) {
         alert('프로필이 수정되었습니다.');
         router.push('/profile');
@@ -59,80 +75,126 @@ export default function ProfileEditPage() {
     }
   };
 
-  if (loading) return <Loading />;
+  if (loading) {
+    return (
+      <main className="min-h-screen pt-14 flex items-center justify-center bg-gray-50">
+        <div className="text-gray-500">로딩 중...</div>
+      </main>
+    );
+  }
 
   return (
-    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen">
-      <div className="max-w-2xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl p-8 shadow-medium"
-        >
-          <h1 className="font-display font-bold text-3xl text-navy mb-8">
-            프로필 수정
-          </h1>
+    <main className="min-h-screen pt-14 pb-12 flex items-center justify-center bg-gray-50 px-4">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">프로필 수정</h1>
+          <p className="text-gray-500 text-sm mt-1">회원 정보를 수정합니다</p>
+        </div>
 
-          {error && <ErrorMessage message={error} />}
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
+              {error}
+            </div>
+          )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* 이름 */}
             <div>
-              <label className="block font-bold text-navy mb-2">
-                이름 <span className="text-coral">*</span>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
+                이름 <span className="text-red-500">*</span>
               </label>
-              <input
-                type="text"
-                required
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                className="w-full px-4 py-3 bg-white rounded-xl border border-navy/10 focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all"
-              />
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  id="name"
+                  required
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                />
+              </div>
             </div>
 
+            {/* 전화번호 */}
             <div>
-              <label className="block font-bold text-navy mb-2">
-                전화번호
+              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1.5">
+                전화번호 <span className="text-gray-400 text-xs">(선택)</span>
               </label>
-              <input
-                type="tel"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                placeholder="010-1234-5678"
-                className="w-full px-4 py-3 bg-white rounded-xl border border-navy/10 focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all"
-              />
+              <div className="relative">
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="tel"
+                  id="phone"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="010-1234-5678"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                />
+              </div>
             </div>
 
+            {/* 학번 */}
             <div>
-              <label className="block font-bold text-navy mb-2">
-                학번
+              <label htmlFor="studentId" className="block text-sm font-medium text-gray-700 mb-1.5">
+                학번 <span className="text-gray-400 text-xs">(선택)</span>
               </label>
-              <input
-                type="text"
-                value={formData.studentId}
-                onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
-                placeholder="12345678"
-                className="w-full px-4 py-3 bg-white rounded-xl border border-navy/10 focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all"
-              />
+              <div className="relative">
+                <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <input
+                  type="text"
+                  id="studentId"
+                  value={formData.studentId}
+                  onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
+                  placeholder="20231234"
+                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                />
+              </div>
             </div>
 
-            <div className="flex gap-4 pt-6">
+            {/* 학교 */}
+            <div>
+              <label htmlFor="schoolId" className="block text-sm font-medium text-gray-700 mb-1.5">
+                학교 <span className="text-gray-400 text-xs">(선택)</span>
+              </label>
+              <div className="relative">
+                <select
+                  id="schoolId"
+                  value={formData.schoolId}
+                  onChange={(e) => setFormData({ ...formData, schoolId: e.target.value })}
+                  className="w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm appearance-none bg-white"
+                >
+                  <option value="">학교 선택</option>
+                  {schools.map((school) => (
+                    <option key={school.schoolId} value={school.schoolId}>
+                      {school.schoolName}
+                    </option>
+                  ))}
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+              </div>
+            </div>
+
+            {/* 버튼 */}
+            <div className="flex gap-3 pt-4">
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="flex-1 py-4 bg-sand text-navy font-bold rounded-xl hover:bg-sand/80 transition-all"
+                className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
               >
                 취소
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 py-4 bg-gradient-coral text-white font-bold rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
+                className="flex-1 py-2.5 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors"
               >
                 {submitting ? '저장 중...' : '저장하기'}
               </button>
             </div>
           </form>
-        </motion.div>
+        </div>
       </div>
     </main>
   );

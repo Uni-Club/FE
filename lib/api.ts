@@ -100,7 +100,7 @@ export const userApi = {
   getMe: () => fetchApi('/users/me'),
 
   // 내 정보 수정
-  updateMe: (data: { name?: string; phone?: string; studentId?: string }) =>
+  updateMe: (data: { name?: string; phone?: string; studentId?: string; schoolId?: number }) =>
     fetchApi('/users/me', {
       method: 'PATCH',
       body: JSON.stringify(data),
