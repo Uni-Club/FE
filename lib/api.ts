@@ -242,7 +242,7 @@ export const recruitmentApi = {
     page?: number;
     size?: number;
   }) =>
-    fetchApi<PageResponse<any>>('/recruitments?' + new URLSearchParams(params as any).toString()),
+    fetchApi<PageResponse<any>>('/recruitments/search?' + new URLSearchParams(params as any).toString()),
 
   // 모집공고 생성
   create: (data: any) =>
@@ -257,7 +257,7 @@ export const recruitmentApi = {
   // 모집공고 수정
   update: (recruitmentId: number, data: any) =>
     fetchApi(`/recruitments/${recruitmentId}`, {
-      method: 'PATCH',
+      method: 'PUT',
       body: JSON.stringify(data),
     }),
 
@@ -269,9 +269,8 @@ export const recruitmentApi = {
 
   // 모집공고 상태 변경
   updateStatus: (recruitmentId: number, status: 'DRAFT' | 'PUBLISHED' | 'CLOSED' | 'ARCHIVED') =>
-    fetchApi(`/recruitments/${recruitmentId}/status`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status }),
+    fetchApi(`/recruitments/${recruitmentId}/status?status=${status}`, {
+      method: 'PUT',
     }),
 
   // 지원하기
@@ -288,10 +287,10 @@ export const applicationApi = {
   getById: (applicationId: number) => fetchApi(`/applications/${applicationId}`),
 
   // 지원서 심사
-  review: (applicationId: number, status: 'ACCEPTED' | 'REJECTED', reviewNote?: string) =>
-    fetchApi(`/applications/${applicationId}`, {
-      method: 'PATCH',
-      body: JSON.stringify({ status, reviewNote }),
+  review: (applicationId: number, status: 'ACCEPTED' | 'REJECTED', memo?: string) =>
+    fetchApi(`/applications/${applicationId}/status`, {
+      method: 'PUT',
+      body: JSON.stringify({ status, memo }),
     }),
 
   // 지원서 취소
@@ -331,8 +330,8 @@ export const postApi = {
     ),
 
   // 게시글 상세 조회
-  getById: (postId: number) =>
-    fetchApi(`/posts/${postId}`),
+  getById: (boardId: number, postId: number) =>
+    fetchApi(`/boards/${boardId}/posts/${postId}`),
 
   // 게시글 작성
   create: (boardId: number, data: { title: string; content: string; isNotice?: boolean; isPinned?: boolean; pinnedUntil?: string }) =>
@@ -342,40 +341,40 @@ export const postApi = {
     }),
 
   // 게시글 수정
-  update: (postId: number, data: { title?: string; content?: string; isNotice?: boolean; isPinned?: boolean; pinnedUntil?: string }) =>
-    fetchApi(`/posts/${postId}`, {
+  update: (boardId: number, postId: number, data: { title?: string; content?: string; isNotice?: boolean; isPinned?: boolean; pinnedUntil?: string }) =>
+    fetchApi(`/boards/${boardId}/posts/${postId}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
 
   // 게시글 삭제
-  delete: (postId: number) =>
-    fetchApi(`/posts/${postId}`, { method: 'DELETE' }),
+  delete: (boardId: number, postId: number) =>
+    fetchApi(`/boards/${boardId}/posts/${postId}`, { method: 'DELETE' }),
 };
 
 // 댓글 API
 export const commentApi = {
   // 게시글의 댓글 목록 조회
-  getByPost: (postId: number) =>
-    fetchApi<any[]>(`/posts/${postId}/comments`),
+  getByPost: (boardId: number, postId: number) =>
+    fetchApi<any[]>(`/boards/${boardId}/posts/${postId}/comments`),
 
   // 댓글 작성
-  create: (postId: number, data: { content: string; parentId?: number }) =>
-    fetchApi(`/posts/${postId}/comments`, {
+  create: (boardId: number, postId: number, data: { content: string; parentId?: number }) =>
+    fetchApi(`/boards/${boardId}/posts/${postId}/comments`, {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
   // 댓글 수정
-  update: (commentId: number, data: { content: string }) =>
-    fetchApi(`/comments/${commentId}`, {
+  update: (boardId: number, postId: number, commentId: number, data: { content: string }) =>
+    fetchApi(`/boards/${boardId}/posts/${postId}/comments/${commentId}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
 
   // 댓글 삭제
-  delete: (commentId: number) =>
-    fetchApi(`/comments/${commentId}`, { method: 'DELETE' }),
+  delete: (boardId: number, postId: number, commentId: number) =>
+    fetchApi(`/boards/${boardId}/posts/${postId}/comments/${commentId}`, { method: 'DELETE' }),
 };
 
 // 일정 API
@@ -385,26 +384,26 @@ export const scheduleApi = {
     fetchApi<any[]>(`/groups/${groupId}/schedules`),
 
   // 일정 상세 조회
-  getById: (scheduleId: number) =>
-    fetchApi(`/schedules/${scheduleId}`),
+  getById: (groupId: number, scheduleId: number) =>
+    fetchApi(`/groups/${groupId}/schedules/${scheduleId}`),
 
   // 일정 생성
-  create: (data: { groupId: number; title: string; description?: string; date: string }) =>
-    fetchApi('/schedules', {
+  create: (groupId: number, data: { title: string; description?: string; startAt: string; endAt: string; location?: string }) =>
+    fetchApi(`/groups/${groupId}/schedules`, {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
   // 일정 수정
-  update: (scheduleId: number, data: { title?: string; description?: string; date?: string }) =>
-    fetchApi(`/schedules/${scheduleId}`, {
+  update: (groupId: number, scheduleId: number, data: { title?: string; description?: string; startAt?: string; endAt?: string; location?: string }) =>
+    fetchApi(`/groups/${groupId}/schedules/${scheduleId}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
 
   // 일정 삭제
-  delete: (scheduleId: number) =>
-    fetchApi(`/schedules/${scheduleId}`, { method: 'DELETE' }),
+  delete: (groupId: number, scheduleId: number) =>
+    fetchApi(`/groups/${groupId}/schedules/${scheduleId}`, { method: 'DELETE' }),
 };
 
 export default {
