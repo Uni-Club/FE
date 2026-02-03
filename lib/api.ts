@@ -124,18 +124,20 @@ export const userApi = {
 // 학교 API
 export const schoolApi = {
   // 학교 검색
-  search: (keyword?: string, region?: string) =>
-    fetchApi(`/schools?keyword=${keyword || ''}&region=${region || ''}`),
+  search: (params?: 
+    { keyword?: string; 
+      region?: string; 
+      page?: number; 
+      size?: number 
+    }) =>
+    fetchApi<PageResponse<any>>("/schools?" + new URLSearchParams(params as any).toString()),
 
   // 학교 상세 조회
   getById: (schoolId: number) => fetchApi(`/schools/${schoolId}`),
 
   // 학교별 동아리 목록
   getGroups: (schoolId: number, params?: { page?: number; size?: number; keyword?: string }) =>
-    fetchApi<PageResponse<any>>(
-      `/schools/${schoolId}/groups?` +
-      new URLSearchParams(params as any).toString()
-    ),
+    fetchApi<PageResponse<any>>(`/schools/${schoolId}/groups?` + new URLSearchParams(params as any).toString()),
 };
 
 // 동아리 API
