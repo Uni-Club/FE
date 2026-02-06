@@ -21,9 +21,12 @@ export default function SchoolsPage() {
   const loadSchools = async () => {
     try {
       setLoading(true);
-      const response = await schoolApi.search(searchQuery);
-      if (response && Array.isArray(response)) {
-        setSchools(response);
+      const response = await schoolApi.search({ keyword: searchQuery, page: 0, size: 100 });
+
+      const data = response?.data ?? response;
+
+      if (Array.isArray(data)) {
+        setSchools(data);
       } else {
         setSchools([]);
       }

@@ -1,3 +1,5 @@
+import { School } from "./types";
+
 // API 기본 설정
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
 
@@ -130,7 +132,7 @@ export const schoolApi = {
       page?: number; 
       size?: number 
     }) =>
-    fetchApi<PageResponse<any>>("/schools?" + new URLSearchParams(params as any).toString()),
+    fetchApi<School[]>("/schools?" + new URLSearchParams(params as any).toString()),
 
   // 학교 상세 조회
   getById: (schoolId: number) => fetchApi(`/schools/${schoolId}`),
