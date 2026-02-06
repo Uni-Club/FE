@@ -29,11 +29,17 @@ export default function SignupPage() {
   const loadSchools = async () => {
     try {
       const response = await schoolApi.search({ page: 0, size: 100 });
-      if (response.data) {
-        setSchools(response.data.content || []);
+
+      const data = response?.data ?? response; // 둘 중 하나가 배열일 것
+
+      if (Array.isArray(data)) {
+        setSchools(data);
+      } else {
+        setSchools([]);
       }
     } catch (err) {
       console.error('Failed to load schools:', err);
+      setSchools([]);
     }
   };
 
