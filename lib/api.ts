@@ -210,13 +210,13 @@ export const schoolApi = {
   search: (params?: { keyword?: string; region?: string; page?: number; size?: number } | string) => {
     // 문자열로 호출된 경우 (이전 호환)
     if (typeof params === 'string') {
-      return fetchApi(`/schools?keyword=${encodeURIComponent(params)}`);
+      return fetchApi<PageResponse<any>>(`/schools?keyword=${encodeURIComponent(params)}`);
     }
     // 객체로 호출된 경우
     if (params) {
-      return fetchApi('/schools' + buildQueryString(params));
+      return fetchApi<PageResponse<any>>('/schools' + buildQueryString(params));
     }
-    return fetchApi('/schools');
+    return fetchApi<PageResponse<any>>('/schools');
   },
 
   // 학교 상세 조회
