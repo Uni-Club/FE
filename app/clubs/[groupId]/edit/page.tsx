@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { groupApi } from '@/lib/api';
+import AuthGuard from '@/components/AuthGuard';
 
-export default function EditClubPage() {
+function EditClubContent() {
   const params = useParams();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -131,5 +132,13 @@ export default function EditClubPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function EditClubPage() {
+  return (
+    <AuthGuard>
+      <EditClubContent />
+    </AuthGuard>
   );
 }

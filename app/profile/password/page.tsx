@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { userApi } from '@/lib/api';
 import ErrorMessage from '@/components/ErrorMessage';
+import AuthGuard from '@/components/AuthGuard';
 
-export default function PasswordChangePage() {
+function PasswordChangeContent() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -43,22 +44,23 @@ export default function PasswordChangePage() {
       } else {
         setError(response.error?.message || '비밀번호 변경에 실패했습니다.');
       }
-    } catch (err: any) {
-      setError(err.message || '비밀번호 변경에 실패했습니다.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : '비밀번호 변경에 실패했습니다.';
+      setError(message);
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen">
+    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-gray-50">
       <div className="max-w-2xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl p-8 shadow-medium"
+          className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200"
         >
-          <h1 className="font-display font-bold text-3xl text-navy mb-8">
+          <h1 className="font-bold text-3xl text-gray-900 mb-8">
             비밀번호 변경
           </h1>
 
@@ -66,44 +68,44 @@ export default function PasswordChangePage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block font-bold text-navy mb-2">
-                현재 비밀번호 <span className="text-coral">*</span>
+              <label className="block font-bold text-gray-900 mb-2">
+                현재 비밀번호 <span className="text-red-500">*</span>
               </label>
               <input
                 type="password"
                 required
                 value={formData.currentPassword}
                 onChange={(e) => setFormData({ ...formData, currentPassword: e.target.value })}
-                className="w-full px-4 py-3 bg-white rounded-xl border border-navy/10 focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all"
+                className="w-full px-4 py-3 bg-white rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-navy mb-2">
-                새 비밀번호 <span className="text-coral">*</span>
+              <label className="block font-bold text-gray-900 mb-2">
+                새 비밀번호 <span className="text-red-500">*</span>
               </label>
               <input
                 type="password"
                 required
                 value={formData.newPassword}
                 onChange={(e) => setFormData({ ...formData, newPassword: e.target.value })}
-                className="w-full px-4 py-3 bg-white rounded-xl border border-navy/10 focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all"
+                className="w-full px-4 py-3 bg-white rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
               />
-              <p className="text-sm text-navy/60 mt-2">
+              <p className="text-sm text-gray-500 mt-2">
                 8자 이상, 영문+숫자+특수문자 조합
               </p>
             </div>
 
             <div>
-              <label className="block font-bold text-navy mb-2">
-                새 비밀번호 확인 <span className="text-coral">*</span>
+              <label className="block font-bold text-gray-900 mb-2">
+                새 비밀번호 확인 <span className="text-red-500">*</span>
               </label>
               <input
                 type="password"
                 required
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                className="w-full px-4 py-3 bg-white rounded-xl border border-navy/10 focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all"
+                className="w-full px-4 py-3 bg-white rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
               />
             </div>
 
@@ -111,14 +113,14 @@ export default function PasswordChangePage() {
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="flex-1 py-4 bg-sand text-navy font-bold rounded-xl hover:bg-sand/80 transition-all"
+                className="flex-1 py-4 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all"
               >
                 취소
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 py-4 bg-gradient-coral text-white font-bold rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
+                className="flex-1 py-4 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 hover:shadow-lg transition-all disabled:opacity-50"
               >
                 {submitting ? '변경 중...' : '변경하기'}
               </button>
@@ -127,5 +129,13 @@ export default function PasswordChangePage() {
         </motion.div>
       </div>
     </main>
+  );
+}
+
+export default function PasswordChangePage() {
+  return (
+    <AuthGuard>
+      <PasswordChangeContent />
+    </AuthGuard>
   );
 }

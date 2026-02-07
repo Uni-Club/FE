@@ -1,19 +1,21 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 
-export default function LoginPage() {
+function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [remember, setRemember] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
   const { login } = useAuth();
+  const searchParams = useSearchParams();
+  const registered = searchParams.get('registered');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,10 +23,11 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await login(email, password);
-      router.push('/');
-    } catch (err: any) {
-      setError(err.message || '로그인에 실패했습니다');
+      await login(email, password, remember);
+      // Redirect is handled by AuthContext
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : '로그인에 실패했습니다';
+      setError(message);
     } finally {
       setLoading(false);
     }
@@ -51,6 +54,12 @@ export default function LoginPage() {
 
         {/* 폼 */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
+          {registered && (
+            <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-600 text-sm">
+              회원가입이 완료되었습니다. 로그인해주세요.
+            </div>
+          )}
+
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
               {error}
@@ -108,11 +117,13 @@ export default function LoginPage() {
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
+                  checked={remember}
+                  onChange={(e) => setRemember(e.target.checked)}
                   className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
                 />
                 <span className="text-gray-600">로그인 유지</span>
               </label>
-              <Link href="/auth/forgot" className="text-blue-500 hover:underline">
+              <Link href="/auth/forgot-password" className="text-blue-500 hover:underline">
                 비밀번호 찾기
               </Link>
             </div>
@@ -147,5 +158,17 @@ export default function LoginPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen pt-14 flex items-center justify-center bg-gray-50 px-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      </main>
+    }>
+      <LoginForm />
+    </Suspense>
   );
 }

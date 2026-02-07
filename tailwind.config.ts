@@ -10,49 +10,6 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Umami-inspired Sky Blue (Primary)
-        sky: {
-          50: '#E6F7FF',
-          100: '#BAE7FF',
-          200: '#91D5FF',
-          300: '#69C0FF',
-          400: '#40A9FF',
-          500: '#1890FF',  // Main
-          600: '#096DD9',
-          700: '#0050B3',
-          800: '#003A8C',
-          900: '#002766',
-        },
-        // Notion-inspired Neutral Grays
-        neutral: {
-          50: '#F7F8FA',   // Background
-          100: '#F1F3F5',
-          200: '#E9ECEF',
-          300: '#DEE2E6',
-          400: '#CED4DA',
-          500: '#ADB5BD',
-          600: '#868E96',
-          700: '#495057',  // Text
-          800: '#343A40',
-          900: '#212529',
-        },
-        // Legacy colors (for backward compatibility)
-        coral: {
-          DEFAULT: '#EF4444',
-          light: '#F87171',
-          dark: '#DC2626',
-        },
-        navy: {
-          DEFAULT: '#1E293B',
-          light: '#334155',
-          dark: '#0F172A',
-        },
-        cyan: {
-          DEFAULT: '#06B6D4',
-          light: '#22D3EE',
-        },
-        cream: '#FFF8F0',
-        sand: '#F4E8D8',
         // shadcn/ui theme colors
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
@@ -107,8 +64,6 @@ const config: Config = {
         'soft-md': '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05)',
         'soft-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.08), 0 4px 6px -4px rgba(0, 0, 0, 0.08)',
         'soft-xl': '0 20px 25px -5px rgba(0, 0, 0, 0.10), 0 8px 10px -6px rgba(0, 0, 0, 0.10)',
-        'primary': '0 8px 16px -4px rgba(24, 144, 255, 0.25)',
-        'success': '0 8px 16px -4px rgba(16, 185, 129, 0.25)',
       },
       animation: {
         'float': 'float 3s ease-in-out infinite',

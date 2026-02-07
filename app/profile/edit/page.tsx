@@ -4,8 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { User, Phone, GraduationCap, ChevronDown } from 'lucide-react';
 import { userApi, schoolApi } from '@/lib/api';
+import AuthGuard from '@/components/AuthGuard';
 
-export default function ProfileEditPage() {
+function ProfileEditContent() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -197,5 +198,13 @@ export default function ProfileEditPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function ProfileEditPage() {
+  return (
+    <AuthGuard>
+      <ProfileEditContent />
+    </AuthGuard>
   );
 }

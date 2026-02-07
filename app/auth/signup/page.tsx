@@ -29,8 +29,9 @@ export default function SignupPage() {
   const loadSchools = async () => {
     try {
       const response = await schoolApi.search({ page: 0, size: 100 });
-      if (response.data) {
-        setSchools(response.data.content || []);
+      if (response.success && response.data) {
+        const data = response.data as { content?: unknown[] };
+        setSchools(data.content || []);
       }
     } catch (err) {
       console.error('Failed to load schools:', err);
@@ -54,7 +55,7 @@ export default function SignupPage() {
     setLoading(true);
 
     try {
-      await authApi.signup({
+      const response = await authApi.signup({
         email: formData.email,
         password: formData.password,
         name: formData.name,
@@ -62,9 +63,15 @@ export default function SignupPage() {
         studentId: formData.studentId || undefined,
         schoolId: formData.schoolId ? Number(formData.schoolId) : undefined,
       });
+
+      if (!response.success) {
+        throw new Error(response.error?.message || '회원가입에 실패했습니다');
+      }
+
       router.push('/auth/login?registered=true');
-    } catch (err: any) {
-      setError(err.message || '회원가입에 실패했습니다');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : '회원가입에 실패했습니다';
+      setError(message);
     } finally {
       setLoading(false);
     }

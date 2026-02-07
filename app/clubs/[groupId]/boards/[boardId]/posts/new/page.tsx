@@ -92,7 +92,7 @@ export default function NewPostPage() {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 px-6 py-4 bg-sky-500 text-white rounded-xl font-bold hover:bg-sky-600 hover:shadow-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-6 py-4 bg-sky-500 text-white rounded-xl font-bold hover:bg-sky-600 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               <Save className="w-5 h-5" />
               {loading ? '작성 중...' : '작성 완료'}

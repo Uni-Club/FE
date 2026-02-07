@@ -2,12 +2,40 @@
 
 import Link from 'next/link';
 import { Menu, X, User, LogOut, Bell } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
+import { notificationApi } from '@/lib/api';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const { user, logout, isAuthenticated } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    const fetchUnreadCount = async () => {
+      if (!isAuthenticated) {
+        setUnreadCount(0);
+        return;
+      }
+      try {
+        const response = await notificationApi.getUnreadCount();
+        if (response.success && response.data) {
+          const data = response.data as any;
+          setUnreadCount(typeof data.count === 'number' ? data.count : (typeof data === 'number' ? data : 0));
+        }
+      } catch (err) {
+        // Silent fail for notification count
+      }
+    };
+
+    fetchUnreadCount();
+
+    // Refresh unread count every 60 seconds
+    if (isAuthenticated) {
+      const interval = setInterval(fetchUnreadCount, 60000);
+      return () => clearInterval(interval);
+    }
+  }, [isAuthenticated]);
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
@@ -40,10 +68,14 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             {isAuthenticated ? (
               <>
-                <button className="p-2 text-gray-500 hover:text-blue-500 relative">
+                <Link href="/notifications" className="p-2 text-gray-500 hover:text-blue-500 relative">
                   <Bell className="w-5 h-5" />
-                  <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
-                </button>
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
                 <Link
                   href="/profile"
                   className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
@@ -106,13 +138,30 @@ export default function Navbar() {
               모집공고
             </Link>
             {isAuthenticated && (
-              <Link
-                href="/applications"
-                className="block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg text-sm"
-                onClick={() => setIsOpen(false)}
-              >
-                내 지원현황
-              </Link>
+              <>
+                <Link
+                  href="/applications"
+                  className="block px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg text-sm"
+                  onClick={() => setIsOpen(false)}
+                >
+                  내 지원현황
+                </Link>
+                <Link
+                  href="/notifications"
+                  className="flex items-center justify-between px-3 py-2 text-gray-700 hover:bg-gray-50 rounded-lg text-sm"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <span className="flex items-center gap-2">
+                    <Bell className="w-4 h-4" />
+                    알림
+                  </span>
+                  {unreadCount > 0 && (
+                    <span className="min-w-[20px] h-5 bg-red-500 text-white text-xs font-bold rounded-full flex items-center justify-center px-1.5">
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </span>
+                  )}
+                </Link>
+              </>
             )}
 
             <div className="pt-2 mt-2 border-t border-gray-100">

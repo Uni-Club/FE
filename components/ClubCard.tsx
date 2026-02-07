@@ -12,7 +12,7 @@ interface ClubCardProps {
     school?: {
       schoolName: string;
     };
-    memberCount: number;
+    memberCount?: number;
     category?: string;
     tags?: string[];
     isRecruiting?: boolean;
@@ -71,7 +71,7 @@ export default function ClubCard({ club }: ClubCardProps) {
         <div className="flex items-center justify-between pt-3 border-t border-gray-100">
           <div className="flex items-center gap-1.5 text-gray-500">
             <Users className="w-4 h-4" />
-            <span className="text-sm">{club.memberCount}명</span>
+            <span className="text-sm">{club.memberCount || 0}명</span>
           </div>
           <ChevronRight className="w-5 h-5 text-gray-400" />
         </div>

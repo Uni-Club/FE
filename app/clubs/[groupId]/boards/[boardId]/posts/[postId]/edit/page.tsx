@@ -22,7 +22,7 @@ export default function EditPostPage() {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        const response = await postApi.getById(Number(postId));
+        const response = await postApi.getById(Number(boardId), Number(postId));
         if (response.success && response.data) {
           const post = response.data as any;
           setTitle(post.title);
@@ -46,7 +46,7 @@ export default function EditPostPage() {
     setError(null);
 
     try {
-      const response = await postApi.update(Number(postId), { title, content });
+      const response = await postApi.update(Number(boardId), Number(postId), { title, content });
       if (response.success) {
         alert('게시글이 수정되었습니다!');
         router.push(`/clubs/${groupId}/boards/${boardId}/posts/${postId}`);
@@ -125,7 +125,7 @@ export default function EditPostPage() {
             <button
               type="submit"
               disabled={saving}
-              className="flex-1 px-6 py-4 bg-sky-500 text-white rounded-xl font-bold hover:bg-sky-600 hover:shadow-primary transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              className="flex-1 px-6 py-4 bg-sky-500 text-white rounded-xl font-bold hover:bg-sky-600 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
               <Save className="w-5 h-5" />
               {saving ? '저장 중...' : '수정 완료'}

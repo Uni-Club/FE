@@ -6,8 +6,9 @@ import { motion } from 'framer-motion';
 import { recruitmentApi } from '@/lib/api';
 import Loading from '@/components/Loading';
 import ErrorMessage from '@/components/ErrorMessage';
+import AuthGuard from '@/components/AuthGuard';
 
-export default function EditRecruitmentPage() {
+function EditRecruitmentContent() {
   const params = useParams();
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -73,9 +74,9 @@ export default function EditRecruitmentPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl p-8 shadow-medium"
+          className="bg-white rounded-2xl p-8 shadow-md"
         >
-          <h1 className="font-display font-bold text-3xl text-navy mb-8">
+          <h1 className="font-display font-bold text-3xl text-slate-800 mb-8">
             모집공고 수정
           </h1>
 
@@ -83,33 +84,33 @@ export default function EditRecruitmentPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block font-bold text-navy mb-2">
-                제목 <span className="text-coral">*</span>
+              <label className="block font-bold text-slate-800 mb-2">
+                제목 <span className="text-orange-500">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-3 bg-white rounded-xl border border-navy/10 focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all"
+                className="w-full px-4 py-3 bg-white rounded-xl border border-slate-200 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200 transition-all"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-navy mb-2">
-                내용 <span className="text-coral">*</span>
+              <label className="block font-bold text-slate-800 mb-2">
+                내용 <span className="text-orange-500">*</span>
               </label>
               <textarea
                 required
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 rows={10}
-                className="w-full px-4 py-3 bg-white rounded-xl border border-navy/10 focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all resize-none"
+                className="w-full px-4 py-3 bg-white rounded-xl border border-slate-200 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200 transition-all resize-none"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-navy mb-2">
+              <label className="block font-bold text-slate-800 mb-2">
                 모집 인원
               </label>
               <input
@@ -117,7 +118,7 @@ export default function EditRecruitmentPage() {
                 value={formData.capacity}
                 onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
                 placeholder="20 (비워두면 제한없음)"
-                className="w-full px-4 py-3 bg-white rounded-xl border border-navy/10 focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all"
+                className="w-full px-4 py-3 bg-white rounded-xl border border-slate-200 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200 transition-all"
               />
             </div>
 
@@ -125,14 +126,14 @@ export default function EditRecruitmentPage() {
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="flex-1 py-4 bg-sand text-navy font-bold rounded-xl hover:bg-sand/80 transition-all"
+                className="flex-1 py-4 bg-amber-50 text-slate-800 font-bold rounded-xl hover:bg-amber-50/80 transition-all"
               >
                 취소
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 py-4 bg-gradient-coral text-white font-bold rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
+                className="flex-1 py-4 bg-gradient-to-r from-orange-400 to-rose-400 text-white font-bold rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
               >
                 {submitting ? '저장 중...' : '저장하기'}
               </button>
@@ -141,5 +142,13 @@ export default function EditRecruitmentPage() {
         </motion.div>
       </div>
     </main>
+  );
+}
+
+export default function EditRecruitmentPage() {
+  return (
+    <AuthGuard>
+      <EditRecruitmentContent />
+    </AuthGuard>
   );
 }

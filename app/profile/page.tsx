@@ -7,8 +7,9 @@ import { motion } from 'framer-motion';
 import { userApi } from '@/lib/api';
 import Loading from '@/components/Loading';
 import ErrorMessage from '@/components/ErrorMessage';
+import AuthGuard from '@/components/AuthGuard';
 
-export default function ProfilePage() {
+function ProfileContent() {
   const [user, setUser] = useState<any>(null);
   const [myGroups, setMyGroups] = useState<any[]>([]);
   const [myApplications, setMyApplications] = useState<any[]>([]);
@@ -44,23 +45,23 @@ export default function ProfilePage() {
   if (!user) return null;
 
   return (
-    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen">
+    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <h1 className="font-display font-bold text-4xl text-navy mb-2">
+          <h1 className="font-bold text-4xl text-gray-900 mb-2">
             마이페이지
           </h1>
-          <p className="text-navy/60">내 정보와 활동을 관리하세요</p>
+          <p className="text-gray-500">내 정보와 활동을 관리하세요</p>
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-4 mb-8 border-b border-navy/10">
+        <div className="flex gap-4 mb-8 border-b border-gray-200">
           <button
             onClick={() => setActiveTab('info')}
             className={`px-6 py-3 font-bold transition-colors border-b-2 ${
               activeTab === 'info'
-                ? 'border-coral text-coral'
-                : 'border-transparent text-navy/60 hover:text-navy'
+                ? 'border-blue-500 text-blue-500'
+                : 'border-transparent text-gray-500 hover:text-gray-900'
             }`}
           >
             내 정보
@@ -69,8 +70,8 @@ export default function ProfilePage() {
             onClick={() => setActiveTab('clubs')}
             className={`px-6 py-3 font-bold transition-colors border-b-2 ${
               activeTab === 'clubs'
-                ? 'border-coral text-coral'
-                : 'border-transparent text-navy/60 hover:text-navy'
+                ? 'border-blue-500 text-blue-500'
+                : 'border-transparent text-gray-500 hover:text-gray-900'
             }`}
           >
             내 동아리 ({myGroups.length})
@@ -79,8 +80,8 @@ export default function ProfilePage() {
             onClick={() => setActiveTab('applications')}
             className={`px-6 py-3 font-bold transition-colors border-b-2 ${
               activeTab === 'applications'
-                ? 'border-coral text-coral'
-                : 'border-transparent text-navy/60 hover:text-navy'
+                ? 'border-blue-500 text-blue-500'
+                : 'border-transparent text-gray-500 hover:text-gray-900'
             }`}
           >
             지원 내역 ({myApplications.length})
@@ -95,12 +96,12 @@ export default function ProfilePage() {
           transition={{ duration: 0.3 }}
         >
           {activeTab === 'info' && (
-            <div className="bg-white rounded-2xl p-8 shadow-medium">
+            <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200">
               <div className="flex justify-between items-start mb-8">
-                <h2 className="font-display font-bold text-2xl text-navy">개인 정보</h2>
+                <h2 className="font-bold text-2xl text-gray-900">개인 정보</h2>
                 <Link
                   href="/profile/edit"
-                  className="flex items-center gap-2 px-4 py-2 bg-sand text-navy font-medium rounded-lg hover:bg-sand/80 transition-all"
+                  className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-all"
                 >
                   <Edit className="w-4 h-4" />
                   수정
@@ -109,54 +110,54 @@ export default function ProfilePage() {
 
               <div className="space-y-6">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-gradient-coral rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
                     <User className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <p className="text-sm text-navy/60">이름</p>
-                    <p className="font-bold text-navy">{user.name}</p>
+                    <p className="text-sm text-gray-500">이름</p>
+                    <p className="font-bold text-gray-900">{user.name}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-sand rounded-full flex items-center justify-center">
-                    <Mail className="w-6 h-6 text-navy" />
+                  <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                    <Mail className="w-6 h-6 text-gray-600" />
                   </div>
                   <div>
-                    <p className="text-sm text-navy/60">이메일</p>
-                    <p className="font-bold text-navy">{user.email}</p>
+                    <p className="text-sm text-gray-500">이메일</p>
+                    <p className="font-bold text-gray-900">{user.email}</p>
                   </div>
                 </div>
 
                 {user.phone && (
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-sand rounded-full flex items-center justify-center">
-                      <Phone className="w-6 h-6 text-navy" />
+                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                      <Phone className="w-6 h-6 text-gray-600" />
                     </div>
                     <div>
-                      <p className="text-sm text-navy/60">전화번호</p>
-                      <p className="font-bold text-navy">{user.phone}</p>
+                      <p className="text-sm text-gray-500">전화번호</p>
+                      <p className="font-bold text-gray-900">{user.phone}</p>
                     </div>
                   </div>
                 )}
 
                 {user.school && (
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 bg-sand rounded-full flex items-center justify-center">
-                      <School className="w-6 h-6 text-navy" />
+                    <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+                      <School className="w-6 h-6 text-gray-600" />
                     </div>
                     <div>
-                      <p className="text-sm text-navy/60">학교</p>
-                      <p className="font-bold text-navy">{user.school.schoolName}</p>
+                      <p className="text-sm text-gray-500">학교</p>
+                      <p className="font-bold text-gray-900">{user.school.schoolName}</p>
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="mt-8 pt-8 border-t border-navy/10">
+              <div className="mt-8 pt-8 border-t border-gray-200">
                 <Link
                   href="/profile/password"
-                  className="flex items-center gap-2 text-navy/70 hover:text-coral transition-colors"
+                  className="flex items-center gap-2 text-gray-600 hover:text-blue-500 transition-colors"
                 >
                   <Lock className="w-5 h-5" />
                   <span className="font-medium">비밀번호 변경</span>
@@ -169,17 +170,17 @@ export default function ProfilePage() {
             <div className="grid md:grid-cols-2 gap-6">
               {myGroups.map((group: any) => (
                 <Link key={group.groupId} href={`/clubs/${group.groupId}`}>
-                  <div className="bg-white rounded-2xl p-6 hover:shadow-medium transition-all border border-navy/5">
-                    <h3 className="font-bold text-xl text-navy mb-2">{group.groupName}</h3>
-                    <p className="text-sm text-navy/60 mb-4">{group.role}</p>
-                    <div className="text-xs text-navy/50">
+                  <div className="bg-white rounded-2xl p-6 hover:shadow-lg transition-all border border-gray-200">
+                    <h3 className="font-bold text-xl text-gray-900 mb-2">{group.groupName}</h3>
+                    <p className="text-sm text-gray-500 mb-4">{group.role}</p>
+                    <div className="text-xs text-gray-400">
                       가입일: {new Date(group.joinedAt).toLocaleDateString()}
                     </div>
                   </div>
                 </Link>
               ))}
               {myGroups.length === 0 && (
-                <div className="col-span-2 text-center py-12 text-navy/60">
+                <div className="col-span-2 text-center py-12 text-gray-500">
                   가입한 동아리가 없습니다.
                 </div>
               )}
@@ -191,14 +192,14 @@ export default function ProfilePage() {
               {myApplications.map((application: any) => (
                 <div
                   key={application.applicationId}
-                  className="bg-white rounded-2xl p-6 shadow-sm border border-navy/5"
+                  className="bg-white rounded-2xl p-6 shadow-sm border border-gray-200"
                 >
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-bold text-lg text-navy mb-1">
+                      <h3 className="font-bold text-lg text-gray-900 mb-1">
                         {application.recruitment?.title}
                       </h3>
-                      <p className="text-sm text-navy/60 mb-3">
+                      <p className="text-sm text-gray-500 mb-3">
                         {application.recruitment?.group?.groupName}
                       </p>
                     </div>
@@ -208,7 +209,7 @@ export default function ProfilePage() {
                           ? 'bg-green-100 text-green-700'
                           : application.status === 'REJECTED'
                           ? 'bg-red-100 text-red-700'
-                          : 'bg-sand text-navy'
+                          : 'bg-gray-100 text-gray-700'
                       }`}
                     >
                       {application.status === 'ACCEPTED' && '합격'}
@@ -217,13 +218,13 @@ export default function ProfilePage() {
                       {application.status === 'SUBMITTED' && '제출완료'}
                     </span>
                   </div>
-                  <div className="text-xs text-navy/50">
+                  <div className="text-xs text-gray-400">
                     지원일: {new Date(application.appliedAt).toLocaleDateString()}
                   </div>
                 </div>
               ))}
               {myApplications.length === 0 && (
-                <div className="text-center py-12 text-navy/60">
+                <div className="text-center py-12 text-gray-500">
                   지원 내역이 없습니다.
                 </div>
               )}
@@ -232,5 +233,13 @@ export default function ProfilePage() {
         </motion.div>
       </div>
     </main>
+  );
+}
+
+export default function ProfilePage() {
+  return (
+    <AuthGuard>
+      <ProfileContent />
+    </AuthGuard>
   );
 }

@@ -6,15 +6,17 @@ import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
 import ScheduleModal from '@/components/ScheduleModal';
 import { scheduleApi } from '@/lib/api';
+import AuthGuard from '@/components/AuthGuard';
 
 interface Schedule {
   scheduleId: number;
   title: string;
   description: string;
-  date: string;
+  startAt: string;
+  endAt: string;
 }
 
-export default function SchedulesPage() {
+function SchedulesContent() {
   const params = useParams();
   const groupId = params.groupId as string;
 
@@ -46,7 +48,7 @@ export default function SchedulesPage() {
 
   const handleCreate = async (data: any) => {
     try {
-      const response = await scheduleApi.create({ ...data, groupId: Number(groupId) });
+      const response = await scheduleApi.create(Number(groupId), data);
       if (response.success) {
         await fetchSchedules();
         setIsModalOpen(false);
@@ -61,7 +63,7 @@ export default function SchedulesPage() {
   const handleUpdate = async (data: any) => {
     if (!editingSchedule) return;
     try {
-      const response = await scheduleApi.update(editingSchedule.scheduleId, data);
+      const response = await scheduleApi.update(Number(groupId), editingSchedule.scheduleId, data);
       if (response.success) {
         await fetchSchedules();
         setIsModalOpen(false);
@@ -77,7 +79,7 @@ export default function SchedulesPage() {
   const handleDelete = async (id: number) => {
     if (!confirm('일정을 삭제하시겠습니까?')) return;
     try {
-      const response = await scheduleApi.delete(id);
+      const response = await scheduleApi.delete(Number(groupId), id);
       if (response.success) {
         await fetchSchedules();
       } else {
@@ -130,7 +132,7 @@ export default function SchedulesPage() {
               setEditingSchedule(null);
               setIsModalOpen(true);
             }}
-            className="px-6 py-3 bg-sky-500 text-white rounded-xl font-semibold hover:bg-sky-600 hover:shadow-primary transition-all flex items-center gap-2"
+            className="px-6 py-3 bg-sky-500 text-white rounded-xl font-semibold hover:bg-sky-600 hover:shadow-lg transition-all flex items-center gap-2"
           >
             <PlusCircle className="w-5 h-5" />
             일정 추가
@@ -169,7 +171,7 @@ export default function SchedulesPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="px-3 py-1 bg-sky-50 text-sky-600 text-xs rounded-full font-semibold">
-                      {new Date(schedule.date).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
+                      {new Date(schedule.startAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
                     </span>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
@@ -199,7 +201,15 @@ export default function SchedulesPage() {
                   <div className="flex items-center gap-2">
                     <Clock className="w-4 h-4" />
                     <span>
-                      {new Date(schedule.date).toLocaleString('ko-KR', {
+                      {new Date(schedule.startAt).toLocaleString('ko-KR', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                      {' ~ '}
+                      {new Date(schedule.endAt).toLocaleString('ko-KR', {
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
@@ -225,5 +235,13 @@ export default function SchedulesPage() {
         />
       </div>
     </main>
+  );
+}
+
+export default function SchedulesPage() {
+  return (
+    <AuthGuard>
+      <SchedulesContent />
+    </AuthGuard>
   );
 }

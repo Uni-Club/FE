@@ -24,12 +24,23 @@ export interface PageResponse<T> {
   hasPrevious: boolean;
 }
 
+// Query string builder (filters out undefined/null values)
+function buildQueryString(params: Record<string, unknown>): string {
+  const filtered = Object.entries(params)
+    .filter(([, value]) => value !== undefined && value !== null && value !== '')
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`);
+  return filtered.length > 0 ? '?' + filtered.join('&') : '';
+}
+
 // API 호출 헬퍼 함수
 async function fetchApi<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<ApiResponse<T>> {
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  // localStorage 또는 sessionStorage에서 토큰 가져오기
+  const token = typeof window !== 'undefined'
+    ? (localStorage.getItem('token') || sessionStorage.getItem('token'))
+    : null;
 
   const defaultHeaders: HeadersInit = {
     'Content-Type': 'application/json',
@@ -48,7 +59,79 @@ async function fetchApi<T>(
       },
     });
 
-    const data = await response.json();
+    // 401/403 에러 처리
+    if (response.status === 401 || response.status === 403) {
+      // 로그인/회원가입 엔드포인트는 자동 로그아웃 하지 않음
+      const isAuthEndpoint = endpoint.includes('/auth/login') || endpoint.includes('/auth/signup');
+
+      if (!isAuthEndpoint && typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+      }
+
+      const errorMessage = isAuthEndpoint
+        ? '잘못된 아이디 혹은 비밀번호입니다.'
+        : '인증이 필요합니다.';
+
+      return { success: false, data: null, error: { code: 'UNAUTHORIZED', message: errorMessage }, timestamp: new Date().toISOString() };
+    }
+
+    // 400 에러 처리 (유효성 검사 실패)
+    if (response.status === 400) {
+      const text = await response.text();
+      let errorMessage = '요청이 올바르지 않습니다.';
+
+      if (text) {
+        try {
+          const errorData = JSON.parse(text);
+          // CustomException: { error: "message" }
+          if (errorData.error && typeof errorData.error === 'string') {
+            errorMessage = errorData.error;
+          }
+          // Spring Validation 에러: { fieldName: "error message" } 형식
+          else if (typeof errorData === 'object' && !errorData.errors) {
+            const messages = Object.values(errorData).filter(v => typeof v === 'string');
+            if (messages.length > 0) {
+              errorMessage = messages.join(', ');
+            }
+          }
+          // Spring Validation 에러 (errors 배열)
+          else if (errorData.errors && Array.isArray(errorData.errors)) {
+            errorMessage = errorData.errors.map((e: any) => e.defaultMessage || e.message).join(', ');
+          }
+          else if (errorData.message) {
+            errorMessage = errorData.message;
+          }
+        } catch {
+          errorMessage = text;
+        }
+      }
+
+      return { success: false, data: null, error: { code: 'BAD_REQUEST', message: errorMessage }, timestamp: new Date().toISOString() };
+    }
+
+    // 404 에러 처리
+    if (response.status === 404) {
+      return { success: false, data: null, error: { code: 'NOT_FOUND', message: '요청한 리소스를 찾을 수 없습니다.' }, timestamp: new Date().toISOString() };
+    }
+
+    // 500 에러 처리
+    if (response.status >= 500) {
+      return { success: false, data: null, error: { code: 'SERVER_ERROR', message: '서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.' }, timestamp: new Date().toISOString() };
+    }
+
+    // 빈 응답 처리 (204 No Content 등)
+    const text = await response.text();
+    if (!text) {
+      return { success: true, data: null, error: null, timestamp: new Date().toISOString() };
+    }
+
+    const data = JSON.parse(text);
+
+    // 백엔드가 직접 데이터를 반환하는 경우 (ApiResponse 형식이 아닌 경우)
+    if (response.ok && data && !('success' in data)) {
+      return { success: true, data, error: null, timestamp: new Date().toISOString() };
+    }
+
     return data;
   } catch (error) {
     console.error('API Error:', error);
@@ -124,8 +207,17 @@ export const userApi = {
 // 학교 API
 export const schoolApi = {
   // 학교 검색
-  search: (keyword?: string, region?: string) =>
-    fetchApi(`/schools?keyword=${keyword || ''}&region=${region || ''}`),
+  search: (params?: { keyword?: string; region?: string; page?: number; size?: number } | string) => {
+    // 문자열로 호출된 경우 (이전 호환)
+    if (typeof params === 'string') {
+      return fetchApi(`/schools?keyword=${encodeURIComponent(params)}`);
+    }
+    // 객체로 호출된 경우
+    if (params) {
+      return fetchApi('/schools' + buildQueryString(params));
+    }
+    return fetchApi('/schools');
+  },
 
   // 학교 상세 조회
   getById: (schoolId: number) => fetchApi(`/schools/${schoolId}`),
@@ -133,8 +225,7 @@ export const schoolApi = {
   // 학교별 동아리 목록
   getGroups: (schoolId: number, params?: { page?: number; size?: number; keyword?: string }) =>
     fetchApi<PageResponse<any>>(
-      `/schools/${schoolId}/groups?` +
-      new URLSearchParams(params as any).toString()
+      `/schools/${schoolId}/groups` + buildQueryString(params || {})
     ),
 };
 
@@ -147,8 +238,7 @@ export const groupApi = {
     isUnion?: boolean;
     page?: number;
     size?: number;
-  }) =>
-    fetchApi<PageResponse<any>>('/groups?' + new URLSearchParams(params as any).toString()),
+  }) => fetchApi<PageResponse<any>>('/groups' + buildQueryString(params)),
 
   // 동아리 생성
   create: (data: {
@@ -227,7 +317,7 @@ export const groupApi = {
   // 지원서 목록 (관리자용)
   getApplications: (groupId: number, params?: { status?: string; page?: number; size?: number }) =>
     fetchApi<PageResponse<any>>(
-      `/groups/${groupId}/applications?` + new URLSearchParams(params as any).toString()
+      `/groups/${groupId}/applications` + buildQueryString(params || {})
     ),
 };
 
@@ -242,7 +332,7 @@ export const recruitmentApi = {
     page?: number;
     size?: number;
   }) =>
-    fetchApi<PageResponse<any>>('/recruitments/search?' + new URLSearchParams(params as any).toString()),
+    fetchApi<PageResponse<any>>('/recruitments/search' + buildQueryString(params)),
 
   // 모집공고 생성
   create: (data: any) =>
@@ -274,7 +364,7 @@ export const recruitmentApi = {
     }),
 
   // 지원하기
-  apply: (recruitmentId: number, data: { motivation: string; answers: any[] }) =>
+  apply: (recruitmentId: number, data: { motivation: string; answers: Record<string, unknown> }) =>
     fetchApi(`/recruitments/${recruitmentId}/apply`, {
       method: 'POST',
       body: JSON.stringify(data),
@@ -326,7 +416,7 @@ export const postApi = {
   // 게시글 목록 조회
   getByBoard: (boardId: number, params?: { page?: number; size?: number; keyword?: string }) =>
     fetchApi<PageResponse<any>>(
-      `/boards/${boardId}/posts?` + new URLSearchParams(params as any).toString()
+      `/boards/${boardId}/posts` + buildQueryString(params || {})
     ),
 
   // 게시글 상세 조회
@@ -406,6 +496,25 @@ export const scheduleApi = {
     fetchApi(`/groups/${groupId}/schedules/${scheduleId}`, { method: 'DELETE' }),
 };
 
+// 알림 API
+export const notificationApi = {
+  // 전체 알림 목록 조회
+  getAll: (params?: { page?: number; size?: number }) =>
+    fetchApi<any[]>('/notifications' + buildQueryString(params || {})),
+
+  // 읽지 않은 알림 수 조회
+  getUnreadCount: () =>
+    fetchApi<{ count: number }>('/notifications/unread-count'),
+
+  // 알림 읽음 처리
+  markAsRead: (notificationId: number) =>
+    fetchApi(`/notifications/${notificationId}/read`, { method: 'PATCH' }),
+
+  // 전체 알림 읽음 처리
+  markAllAsRead: () =>
+    fetchApi('/notifications/read-all', { method: 'PATCH' }),
+};
+
 export default {
   auth: authApi,
   user: userApi,
@@ -417,4 +526,5 @@ export default {
   post: postApi,
   comment: commentApi,
   schedule: scheduleApi,
+  notification: notificationApi,
 };

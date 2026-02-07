@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { User, Calendar, Eye, Edit, Trash, Loader2, MessageSquare, Send } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { postApi, commentApi } from '@/lib/api';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Post {
   postId: number;
@@ -38,6 +39,7 @@ interface Comment {
 export default function PostDetailPage() {
   const params = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const groupId = params.groupId as string;
   const boardId = params.boardId as string;
   const postId = params.postId as string;
@@ -51,11 +53,16 @@ export default function PostDetailPage() {
   const [commentContent, setCommentContent] = useState('');
   const [submittingComment, setSubmittingComment] = useState(false);
 
+  // Comment editing state
+  const [editingCommentId, setEditingCommentId] = useState<number | null>(null);
+  const [editingCommentContent, setEditingCommentContent] = useState('');
+  const [savingComment, setSavingComment] = useState(false);
+
   useEffect(() => {
     const fetchPost = async () => {
       try {
         setLoading(true);
-        const response = await postApi.getById(Number(postId));
+        const response = await postApi.getById(Number(boardId), Number(postId));
         if (response.success && response.data) {
           setPost(response.data as Post);
         } else {
@@ -74,7 +81,7 @@ export default function PostDetailPage() {
   useEffect(() => {
     const fetchComments = async () => {
       try {
-        const response = await commentApi.getByPost(Number(postId));
+        const response = await commentApi.getByPost(Number(boardId), Number(postId));
         if (response.success && response.data) {
           setComments(response.data);
         }
@@ -88,19 +95,27 @@ export default function PostDetailPage() {
     }
   }, [postId]);
 
+  const refreshComments = async () => {
+    try {
+      const response = await commentApi.getByPost(Number(boardId), Number(postId));
+      if (response.success && response.data) {
+        setComments(response.data);
+      }
+    } catch (err) {
+      console.error('Failed to refresh comments:', err);
+    }
+  };
+
   const handleCommentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!commentContent.trim()) return;
 
     try {
       setSubmittingComment(true);
-      const response = await commentApi.create(Number(postId), { content: commentContent });
+      const response = await commentApi.create(Number(boardId), Number(postId), { content: commentContent });
       if (response.success) {
         setCommentContent('');
-        const refreshResponse = await commentApi.getByPost(Number(postId));
-        if (refreshResponse.success && refreshResponse.data) {
-          setComments(refreshResponse.data);
-        }
+        await refreshComments();
       } else {
         alert(response.error?.message || '댓글 작성에 실패했습니다.');
       }
@@ -115,12 +130,9 @@ export default function PostDetailPage() {
     if (!confirm('댓글을 삭제하시겠습니까?')) return;
 
     try {
-      const response = await commentApi.delete(commentId);
+      const response = await commentApi.delete(Number(boardId), Number(postId), commentId);
       if (response.success) {
-        const refreshResponse = await commentApi.getByPost(Number(postId));
-        if (refreshResponse.success && refreshResponse.data) {
-          setComments(refreshResponse.data);
-        }
+        await refreshComments();
       } else {
         alert(response.error?.message || '댓글 삭제에 실패했습니다.');
       }
@@ -129,12 +141,44 @@ export default function PostDetailPage() {
     }
   };
 
+  const handleCommentEditStart = (comment: Comment) => {
+    setEditingCommentId(comment.commentId);
+    setEditingCommentContent(comment.content);
+  };
+
+  const handleCommentEditCancel = () => {
+    setEditingCommentId(null);
+    setEditingCommentContent('');
+  };
+
+  const handleCommentEditSave = async (commentId: number) => {
+    if (!editingCommentContent.trim()) return;
+
+    try {
+      setSavingComment(true);
+      const response = await commentApi.update(Number(boardId), Number(postId), commentId, {
+        content: editingCommentContent,
+      });
+      if (response.success) {
+        setEditingCommentId(null);
+        setEditingCommentContent('');
+        await refreshComments();
+      } else {
+        alert(response.error?.message || '댓글 수정에 실패했습니다.');
+      }
+    } catch (err) {
+      alert('댓글 수정 중 오류가 발생했습니다.');
+    } finally {
+      setSavingComment(false);
+    }
+  };
+
   const handleDelete = async () => {
     if (!confirm('정말 삭제하시겠습니까?')) return;
 
     try {
       setDeleting(true);
-      const response = await postApi.delete(Number(postId));
+      const response = await postApi.delete(Number(boardId), Number(postId));
       if (response.success) {
         alert('게시글이 삭제되었습니다.');
         router.push(`/clubs/${groupId}/boards/${boardId}`);
@@ -233,22 +277,24 @@ export default function PostDetailPage() {
             </div>
           </div>
 
-          <div className="flex gap-3 mt-8 pt-6 border-t border-neutral-200">
-            <Link href={`/clubs/${groupId}/boards/${boardId}/posts/${postId}/edit`}>
-              <button className="px-4 py-2 bg-neutral-100 text-neutral-900 rounded-lg font-medium hover:bg-neutral-200 transition-all flex items-center gap-2">
-                <Edit className="w-4 h-4" />
-                수정
+          {user && post.author && user.userId === post.author.userId && (
+            <div className="flex gap-3 mt-8 pt-6 border-t border-neutral-200">
+              <Link href={`/clubs/${groupId}/boards/${boardId}/posts/${postId}/edit`}>
+                <button className="px-4 py-2 bg-neutral-100 text-neutral-900 rounded-lg font-medium hover:bg-neutral-200 transition-all flex items-center gap-2">
+                  <Edit className="w-4 h-4" />
+                  수정
+                </button>
+              </Link>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="px-4 py-2 bg-red-100 text-red-600 rounded-lg font-medium hover:bg-red-200 transition-all flex items-center gap-2 disabled:opacity-50"
+              >
+                <Trash className="w-4 h-4" />
+                {deleting ? '삭제 중...' : '삭제'}
               </button>
-            </Link>
-            <button
-              onClick={handleDelete}
-              disabled={deleting}
-              className="px-4 py-2 bg-red-100 text-red-600 rounded-lg font-medium hover:bg-red-200 transition-all flex items-center gap-2 disabled:opacity-50"
-            >
-              <Trash className="w-4 h-4" />
-              {deleting ? '삭제 중...' : '삭제'}
-            </button>
-          </div>
+            </div>
+          )}
         </motion.div>
 
         {/* 댓글 섹션 */}
@@ -296,14 +342,51 @@ export default function PostDetailPage() {
                         {new Date(comment.createdAt).toLocaleString('ko-KR')}
                       </span>
                     </div>
-                    <button
-                      onClick={() => handleCommentDelete(comment.commentId)}
-                      className="text-sm text-red-500 hover:text-red-600"
-                    >
-                      삭제
-                    </button>
+                    {user && comment.author && user.userId === comment.author.userId && editingCommentId !== comment.commentId && (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleCommentEditStart(comment)}
+                          className="text-sm text-neutral-500 hover:text-sky-600"
+                        >
+                          수정
+                        </button>
+                        <button
+                          onClick={() => handleCommentDelete(comment.commentId)}
+                          className="text-sm text-red-500 hover:text-red-600"
+                        >
+                          삭제
+                        </button>
+                      </div>
+                    )}
                   </div>
-                  <p className="text-neutral-700 whitespace-pre-wrap">{comment.content}</p>
+
+                  {editingCommentId === comment.commentId ? (
+                    <div className="mt-2">
+                      <textarea
+                        value={editingCommentContent}
+                        onChange={(e) => setEditingCommentContent(e.target.value)}
+                        rows={3}
+                        className="w-full px-4 py-3 bg-white rounded-xl border border-neutral-200 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100 transition-all resize-none"
+                      />
+                      <div className="flex justify-end gap-2 mt-2">
+                        <button
+                          onClick={handleCommentEditCancel}
+                          className="px-4 py-1.5 text-sm bg-neutral-100 text-neutral-700 rounded-lg font-medium hover:bg-neutral-200 transition-colors"
+                        >
+                          취소
+                        </button>
+                        <button
+                          onClick={() => handleCommentEditSave(comment.commentId)}
+                          disabled={savingComment || !editingCommentContent.trim()}
+                          className="px-4 py-1.5 text-sm bg-sky-500 text-white rounded-lg font-medium hover:bg-sky-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                        >
+                          {savingComment ? '저장 중...' : '저장'}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-neutral-700 whitespace-pre-wrap">{comment.content}</p>
+                  )}
                 </div>
               ))
             )}

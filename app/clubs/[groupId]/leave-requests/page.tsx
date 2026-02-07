@@ -7,8 +7,9 @@ import { motion } from 'framer-motion';
 import { groupApi } from '@/lib/api';
 import Loading from '@/components/Loading';
 import ErrorMessage from '@/components/ErrorMessage';
+import AuthGuard from '@/components/AuthGuard';
 
-export default function LeaveRequestsPage() {
+function LeaveRequestsContent() {
   const params = useParams();
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -78,10 +79,10 @@ export default function LeaveRequestsPage() {
     <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <h1 className="font-display font-bold text-4xl text-navy mb-2">
+          <h1 className="font-display font-bold text-4xl text-slate-800 mb-2">
             탈퇴 신청 관리
           </h1>
-          <p className="text-navy/60">총 {requests.length}개의 신청</p>
+          <p className="text-slate-800/60">총 {requests.length}개의 신청</p>
         </div>
 
         {error && <ErrorMessage message={error} />}
@@ -93,39 +94,39 @@ export default function LeaveRequestsPage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
-              className="bg-white rounded-2xl p-6 shadow-sm border border-navy/5"
+              className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200"
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-gradient-coral rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-rose-400 rounded-full flex items-center justify-center">
                     <UserMinus className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg text-navy mb-1">
+                    <h3 className="font-bold text-lg text-slate-800 mb-1">
                       {request.user.name}
                     </h3>
-                    <p className="text-sm text-navy/60 mb-3">
+                    <p className="text-sm text-slate-800/60 mb-3">
                       {request.user.email}
                     </p>
-                    <div className="bg-sand/30 rounded-lg p-3 mb-3">
-                      <p className="text-sm font-medium text-navy mb-1">탈퇴 사유:</p>
-                      <p className="text-navy/70">{request.reason || '없음'}</p>
+                    <div className="bg-stone-100 rounded-lg p-3 mb-3">
+                      <p className="text-sm font-medium text-slate-800 mb-1">탈퇴 사유:</p>
+                      <p className="text-slate-800/70">{request.reason || '없음'}</p>
                     </div>
-                    <p className="text-xs text-navy/50">
+                    <p className="text-xs text-slate-800/50">
                       신청일: {new Date(request.requestedAt).toLocaleDateString()}
                     </p>
 
                     {request.status !== 'PENDING' && (
-                      <div className="mt-3 pt-3 border-t border-navy/10">
-                        <p className="text-sm font-medium text-navy mb-1">
+                      <div className="mt-3 pt-3 border-t border-slate-200">
+                        <p className="text-sm font-medium text-slate-800 mb-1">
                           처리 결과: <span className={request.status === 'APPROVED' ? 'text-green-600' : 'text-red-600'}>
                             {request.status === 'APPROVED' ? '승인' : '거절'}
                           </span>
                         </p>
                         {request.reviewNote && (
-                          <p className="text-sm text-navy/70">의견: {request.reviewNote}</p>
+                          <p className="text-sm text-slate-800/70">의견: {request.reviewNote}</p>
                         )}
-                        <p className="text-xs text-navy/50">
+                        <p className="text-xs text-slate-800/50">
                           처리일: {new Date(request.reviewedAt).toLocaleDateString()}
                         </p>
                       </div>
@@ -140,7 +141,7 @@ export default function LeaveRequestsPage() {
                         ? 'bg-green-100 text-green-700'
                         : request.status === 'REJECTED'
                         ? 'bg-red-100 text-red-700'
-                        : 'bg-sand text-navy'
+                        : 'bg-amber-50 text-slate-800'
                     }`}
                   >
                     {request.status === 'APPROVED' && '승인됨'}
@@ -173,11 +174,19 @@ export default function LeaveRequestsPage() {
         </div>
 
         {requests.length === 0 && !loading && (
-          <div className="text-center py-20 text-navy/60">
+          <div className="text-center py-20 text-slate-800/60">
             탈퇴 신청이 없습니다.
           </div>
         )}
       </div>
     </main>
+  );
+}
+
+export default function LeaveRequestsPage() {
+  return (
+    <AuthGuard>
+      <LeaveRequestsContent />
+    </AuthGuard>
   );
 }

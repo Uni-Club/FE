@@ -5,8 +5,9 @@ import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { groupApi, schoolApi } from '@/lib/api';
 import ErrorMessage from '@/components/ErrorMessage';
+import AuthGuard from '@/components/AuthGuard';
 
-export default function NewClubPage() {
+function NewClubContent() {
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -25,8 +26,9 @@ export default function NewClubPage() {
   const loadSchools = async () => {
     try {
       const response = await schoolApi.search();
-      if (response.success && Array.isArray(response.data)) {
-        setSchools(response.data);
+      if (response.success && response.data) {
+        const data = response.data as { content?: unknown[] };
+        setSchools(data.content || []);
       }
     } catch (err) {
       console.error('Failed to load schools');
@@ -46,22 +48,23 @@ export default function NewClubPage() {
       } else {
         setError(response.error?.message || '동아리 생성에 실패했습니다.');
       }
-    } catch (err: any) {
-      setError(err.message || '동아리 생성에 실패했습니다.');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : '동아리 생성에 실패했습니다.';
+      setError(message);
     } finally {
       setSubmitting(false);
     }
   };
 
   return (
-    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen">
+    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-gray-50">
       <div className="max-w-2xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl p-8 shadow-medium"
+          className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200"
         >
-          <h1 className="font-display font-bold text-3xl text-navy mb-8">
+          <h1 className="font-bold text-3xl text-gray-900 mb-8">
             새 동아리 만들기
           </h1>
 
@@ -69,8 +72,8 @@ export default function NewClubPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block font-bold text-navy mb-2">
-                동아리 이름 <span className="text-coral">*</span>
+              <label className="block font-bold text-gray-900 mb-2">
+                동아리 이름 <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
@@ -78,13 +81,13 @@ export default function NewClubPage() {
                 value={formData.groupName}
                 onChange={(e) => setFormData({ ...formData, groupName: e.target.value })}
                 placeholder="동아리 이름을 입력하세요"
-                className="w-full px-4 py-3 bg-white rounded-xl border border-navy/10 focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all"
+                className="w-full px-4 py-3 bg-white rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-navy mb-2">
-                동아리 소개 <span className="text-coral">*</span>
+              <label className="block font-bold text-gray-900 mb-2">
+                동아리 소개 <span className="text-red-500">*</span>
               </label>
               <textarea
                 required
@@ -92,18 +95,18 @@ export default function NewClubPage() {
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={5}
                 placeholder="동아리에 대해 소개해주세요"
-                className="w-full px-4 py-3 bg-white rounded-xl border border-navy/10 focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all resize-none"
+                className="w-full px-4 py-3 bg-white rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all resize-none"
               />
             </div>
 
             <div>
-              <label className="block font-bold text-navy mb-2">
+              <label className="block font-bold text-gray-900 mb-2">
                 학교 선택
               </label>
               <select
                 value={formData.schoolId}
                 onChange={(e) => setFormData({ ...formData, schoolId: Number(e.target.value) })}
-                className="w-full px-4 py-3 bg-white rounded-xl border border-navy/10 focus:border-coral focus:outline-none focus:ring-2 focus:ring-coral/20 transition-all"
+                className="w-full px-4 py-3 bg-white rounded-xl border border-gray-200 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all"
               >
                 <option value={0}>학교 선택 안함 (연합 동아리)</option>
                 {schools.map((school) => (
@@ -120,9 +123,9 @@ export default function NewClubPage() {
                 id="isUnion"
                 checked={formData.isUnion}
                 onChange={(e) => setFormData({ ...formData, isUnion: e.target.checked })}
-                className="w-5 h-5 text-coral rounded border-navy/20 focus:ring-coral"
+                className="w-5 h-5 text-blue-500 rounded border-gray-200 focus:ring-blue-500"
               />
-              <label htmlFor="isUnion" className="font-medium text-navy">
+              <label htmlFor="isUnion" className="font-medium text-gray-700">
                 연합 동아리입니다
               </label>
             </div>
@@ -131,14 +134,14 @@ export default function NewClubPage() {
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="flex-1 py-4 bg-sand text-navy font-bold rounded-xl hover:bg-sand/80 transition-all"
+                className="flex-1 py-4 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-all"
               >
                 취소
               </button>
               <button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 py-4 bg-gradient-coral text-white font-bold rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
+                className="flex-1 py-4 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 hover:shadow-lg transition-all disabled:opacity-50"
               >
                 {submitting ? '생성 중...' : '동아리 만들기'}
               </button>
@@ -147,5 +150,13 @@ export default function NewClubPage() {
         </motion.div>
       </div>
     </main>
+  );
+}
+
+export default function NewClubPage() {
+  return (
+    <AuthGuard>
+      <NewClubContent />
+    </AuthGuard>
   );
 }

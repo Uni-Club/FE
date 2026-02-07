@@ -106,7 +106,7 @@ export default function BoardDetailPage() {
             />
           </div>
           <Link href={`/clubs/${groupId}/boards/${boardId}/posts/new`}>
-            <button className="px-6 py-3 bg-sky-500 text-white rounded-xl font-semibold hover:bg-sky-600 hover:shadow-primary transition-all flex items-center gap-2">
+            <button className="px-6 py-3 bg-sky-500 text-white rounded-xl font-semibold hover:bg-sky-600 hover:shadow-lg transition-all flex items-center gap-2">
               <PlusCircle className="w-5 h-5" />
               글쓰기
             </button>

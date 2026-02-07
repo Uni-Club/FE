@@ -3,8 +3,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { recruitmentApi } from '@/lib/api';
+import AuthGuard from '@/components/AuthGuard';
 
-export default function ApplyPage() {
+function ApplyContent() {
   const params = useParams();
   const router = useRouter();
   const [recruitment, setRecruitment] = useState<any>(null);
@@ -39,14 +40,11 @@ export default function ApplyPage() {
     try {
       setSubmitting(true);
       setError('');
-      const answerArray = Object.entries(answers).map(([fieldName, value]) => ({
-        fieldName,
-        value,
-      }));
 
+      // Backend expects Map<String, Object>, not array
       const response = await recruitmentApi.apply(Number(params.id), {
         motivation,
-        answers: answerArray,
+        answers,  // answers is already Record<string, string>
       });
 
       if (response.success) {
@@ -190,5 +188,13 @@ export default function ApplyPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function ApplyPage() {
+  return (
+    <AuthGuard>
+      <ApplyContent />
+    </AuthGuard>
   );
 }

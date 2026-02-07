@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { X, Plus } from 'lucide-react';
 import { recruitmentApi } from '@/lib/api';
+import AuthGuard from '@/components/AuthGuard';
 
 interface CustomField {
   fieldName: string;
@@ -13,7 +14,7 @@ interface CustomField {
   options: string[];
 }
 
-export default function NewRecruitmentPage() {
+function NewRecruitmentContent() {
   const params = useParams();
   const router = useRouter();
   const [submitting, setSubmitting] = useState(false);
@@ -427,5 +428,13 @@ export default function NewRecruitmentPage() {
         </>
       )}
     </main>
+  );
+}
+
+export default function NewRecruitmentPage() {
+  return (
+    <AuthGuard>
+      <NewRecruitmentContent />
+    </AuthGuard>
   );
 }
