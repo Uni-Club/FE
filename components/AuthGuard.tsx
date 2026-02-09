@@ -21,7 +21,7 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
   if (loading) {
     return (
-      <main className="pt-28 pb-20 px-4 min-h-screen bg-gray-50">
+      <main className="pt-28 pb-20 px-4 min-h-screen bg-slate-50">
         <Loading />
       </main>
     );

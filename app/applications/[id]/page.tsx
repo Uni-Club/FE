@@ -8,6 +8,9 @@ import { motion } from 'framer-motion';
 import { applicationApi } from '@/lib/api';
 import Loading from '@/components/Loading';
 import AuthGuard from '@/components/AuthGuard';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 interface ApplicationDetail {
   applicationId: number;
@@ -31,6 +34,8 @@ function ApplicationDetailContent() {
   const params = useParams();
   const router = useRouter();
   const id = params.id as string;
+  const { toast } = useToast();
+  const confirm = useConfirm();
   const [application, setApplication] = useState<ApplicationDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -59,19 +64,26 @@ function ApplicationDetailContent() {
 
   const handleCancel = async () => {
     if (!application) return;
-    if (!confirm('정말로 지원을 취소하시겠습니까?')) return;
+    const ok = await confirm({
+      title: '지원 취소',
+      description: '정말로 지원을 취소하시겠습니까?',
+      variant: 'destructive',
+      confirmText: '취소하기',
+      cancelText: '돌아가기',
+    });
+    if (!ok) return;
 
     try {
       setCancelling(true);
       const response = await applicationApi.cancel(application.applicationId);
       if (response.success) {
-        alert('지원이 취소되었습니다.');
+        toast({ title: '지원이 취소되었습니다.', variant: 'success' });
         router.push('/applications');
       } else {
-        alert(response.error?.message || '지원 취소에 실패했습니다.');
+        toast({ title: response.error?.message || '지원 취소에 실패했습니다.', variant: 'error' });
       }
     } catch (err) {
-      alert('지원 취소에 실패했습니다.');
+      toast({ title: '지원 취소에 실패했습니다.', variant: 'error' });
     } finally {
       setCancelling(false);
     }
@@ -80,8 +92,8 @@ function ApplicationDetailContent() {
   const getStatusBadge = (status: string) => {
     const config: Record<string, { bg: string; text: string; label: string; icon: React.ReactNode }> = {
       SUBMITTED: {
-        bg: 'bg-blue-100',
-        text: 'text-blue-700',
+        bg: 'bg-indigo-100',
+        text: 'text-indigo-700',
         label: '제출완료',
         icon: <FileText className="w-4 h-4" />,
       },
@@ -104,8 +116,8 @@ function ApplicationDetailContent() {
         icon: <XCircle className="w-4 h-4" />,
       },
       CANCELLED: {
-        bg: 'bg-gray-100',
-        text: 'text-gray-500',
+        bg: 'bg-slate-100',
+        text: 'text-slate-500',
         label: '취소됨',
         icon: <XCircle className="w-4 h-4" />,
       },
@@ -123,22 +135,21 @@ function ApplicationDetailContent() {
 
   if (error || !application) {
     return (
-      <main className="pt-20 pb-12 px-4 sm:px-6 lg:px-8 min-h-screen bg-gray-50">
+      <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
         <div className="max-w-2xl mx-auto text-center py-16">
-          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FileText className="w-8 h-8 text-gray-400" />
+          <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <FileText className="w-8 h-8 text-slate-400" />
           </div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">
+          <h1 className="text-xl font-bold text-slate-900 mb-2">
             지원서를 찾을 수 없습니다
           </h1>
-          <p className="text-gray-500 mb-6">{error}</p>
-          <Link
-            href="/applications"
-            className="inline-flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            지원 내역으로 돌아가기
-          </Link>
+          <p className="text-slate-500 mb-6">{error}</p>
+          <Button asChild>
+            <Link href="/applications">
+              <ArrowLeft className="w-4 h-4" />
+              지원 내역으로 돌아가기
+            </Link>
+          </Button>
         </div>
       </main>
     );
@@ -147,12 +158,12 @@ function ApplicationDetailContent() {
   const canCancel = application.status === 'SUBMITTED' || application.status === 'UNDER_REVIEW';
 
   return (
-    <main className="pt-20 pb-12 px-4 sm:px-6 lg:px-8 min-h-screen bg-gray-50">
+    <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
       <div className="max-w-2xl mx-auto">
         {/* Back Button */}
         <Link
           href="/applications"
-          className="inline-flex items-center gap-2 text-gray-500 hover:text-gray-700 mb-6 text-sm"
+          className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-700 mb-6 text-sm"
         >
           <ArrowLeft className="w-4 h-4" />
           지원 내역으로 돌아가기
@@ -161,20 +172,20 @@ function ApplicationDetailContent() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-xl border border-gray-200 overflow-hidden"
+          className="bg-white rounded-xl border border-slate-200 overflow-hidden"
         >
           {/* Header */}
-          <div className="p-6 border-b border-gray-100">
+          <div className="p-6 border-b border-slate-100">
             <div className="flex items-start justify-between mb-4">
               <div>
-                <h1 className="text-xl font-bold text-gray-900 mb-1">
+                <h1 className="text-xl font-bold text-slate-900 mb-1">
                   {application.recruitmentTitle}
                 </h1>
-                <div className="flex items-center gap-2 text-gray-500 text-sm">
+                <div className="flex items-center gap-2 text-slate-500 text-sm">
                   <Building2 className="w-4 h-4" />
                   <Link
                     href={`/clubs/${application.groupId}`}
-                    className="hover:text-blue-500 hover:underline"
+                    className="hover:text-indigo-600 hover:underline"
                   >
                     {application.groupName}
                   </Link>
@@ -183,7 +194,7 @@ function ApplicationDetailContent() {
               {getStatusBadge(application.status)}
             </div>
 
-            <div className="flex items-center gap-4 text-sm text-gray-500">
+            <div className="flex items-center gap-4 text-sm text-slate-500">
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4" />
                 <span>지원일: {new Date(application.appliedAt).toLocaleDateString('ko-KR')}</span>
@@ -201,9 +212,9 @@ function ApplicationDetailContent() {
           <div className="p-6 space-y-6">
             {/* Motivation */}
             <div>
-              <h2 className="font-bold text-gray-900 mb-3">지원 동기</h2>
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
+              <h2 className="font-bold text-slate-900 mb-3">지원 동기</h2>
+              <div className="bg-slate-50 rounded-lg p-4">
+                <p className="text-slate-700 whitespace-pre-wrap leading-relaxed">
                   {application.motivation || '작성된 지원 동기가 없습니다.'}
                 </p>
               </div>
@@ -212,12 +223,12 @@ function ApplicationDetailContent() {
             {/* Answers */}
             {application.answers && Object.keys(application.answers).length > 0 && (
               <div>
-                <h2 className="font-bold text-gray-900 mb-3">추가 질문 답변</h2>
+                <h2 className="font-bold text-slate-900 mb-3">추가 질문 답변</h2>
                 <div className="space-y-3">
                   {Object.entries(application.answers).map(([key, value], index) => (
-                    <div key={index} className="bg-gray-50 rounded-lg p-4">
-                      <h3 className="font-medium text-gray-900 mb-1.5 text-sm">{key}</h3>
-                      <p className="text-gray-700">{String(value)}</p>
+                    <div key={index} className="bg-slate-50 rounded-lg p-4">
+                      <h3 className="font-medium text-slate-900 mb-1.5 text-sm">{key}</h3>
+                      <p className="text-slate-700">{String(value)}</p>
                     </div>
                   ))}
                 </div>
@@ -227,19 +238,19 @@ function ApplicationDetailContent() {
             {/* Review Note */}
             {application.reviewNote && (
               <div>
-                <h2 className="font-bold text-gray-900 mb-3">심사 의견</h2>
+                <h2 className="font-bold text-slate-900 mb-3">심사 의견</h2>
                 <div className={`rounded-lg p-4 ${
                   application.status === 'ACCEPTED'
                     ? 'bg-green-50 border border-green-100'
                     : application.status === 'REJECTED'
                     ? 'bg-red-50 border border-red-100'
-                    : 'bg-gray-50'
+                    : 'bg-slate-50'
                 }`}>
-                  <p className="text-gray-700 whitespace-pre-wrap">
+                  <p className="text-slate-700 whitespace-pre-wrap">
                     {application.reviewNote}
                   </p>
                   {application.reviewerName && (
-                    <p className="text-sm text-gray-500 mt-2">
+                    <p className="text-sm text-slate-500 mt-2">
                       - {application.reviewerName}
                     </p>
                   )}
@@ -250,15 +261,16 @@ function ApplicationDetailContent() {
 
           {/* Actions */}
           {canCancel && (
-            <div className="p-6 border-t border-gray-100 bg-gray-50">
-              <button
+            <div className="p-6 border-t border-slate-100 bg-slate-50">
+              <Button
+                variant="outline"
+                className="w-full"
                 onClick={handleCancel}
                 disabled={cancelling}
-                className="w-full py-3 bg-white border border-gray-200 text-gray-600 rounded-lg font-medium hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
               >
                 <XCircle className="w-5 h-5" />
                 {cancelling ? '취소 중...' : '지원 취소'}
-              </button>
+              </Button>
             </div>
           )}
         </motion.div>

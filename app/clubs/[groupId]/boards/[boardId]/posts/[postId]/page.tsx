@@ -7,6 +7,9 @@ import { User, Calendar, Eye, Edit, Trash, Loader2, MessageSquare, Send } from '
 import { motion } from 'framer-motion';
 import { postApi, commentApi } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/toast';
+import { useConfirm } from '@/components/ui/confirm-dialog';
 
 interface Post {
   postId: number;
@@ -40,6 +43,8 @@ export default function PostDetailPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
+  const { toast } = useToast();
+  const confirm = useConfirm();
   const groupId = params.groupId as string;
   const boardId = params.boardId as string;
   const postId = params.postId as string;
@@ -117,27 +122,32 @@ export default function PostDetailPage() {
         setCommentContent('');
         await refreshComments();
       } else {
-        alert(response.error?.message || '댓글 작성에 실패했습니다.');
+        toast({ title: response.error?.message || '댓글 작성에 실패했습니다.', variant: 'error' });
       }
     } catch (err) {
-      alert('댓글 작성 중 오류가 발생했습니다.');
+      toast({ title: '댓글 작성 중 오류가 발생했습니다.', variant: 'error' });
     } finally {
       setSubmittingComment(false);
     }
   };
 
   const handleCommentDelete = async (commentId: number) => {
-    if (!confirm('댓글을 삭제하시겠습니까?')) return;
+    const ok = await confirm({
+      title: '댓글을 삭제하시겠습니까?',
+      variant: 'destructive',
+      confirmText: '삭제',
+    });
+    if (!ok) return;
 
     try {
       const response = await commentApi.delete(Number(boardId), Number(postId), commentId);
       if (response.success) {
         await refreshComments();
       } else {
-        alert(response.error?.message || '댓글 삭제에 실패했습니다.');
+        toast({ title: response.error?.message || '댓글 삭제에 실패했습니다.', variant: 'error' });
       }
     } catch (err) {
-      alert('댓글 삭제 중 오류가 발생했습니다.');
+      toast({ title: '댓글 삭제 중 오류가 발생했습니다.', variant: 'error' });
     }
   };
 
@@ -164,29 +174,35 @@ export default function PostDetailPage() {
         setEditingCommentContent('');
         await refreshComments();
       } else {
-        alert(response.error?.message || '댓글 수정에 실패했습니다.');
+        toast({ title: response.error?.message || '댓글 수정에 실패했습니다.', variant: 'error' });
       }
     } catch (err) {
-      alert('댓글 수정 중 오류가 발생했습니다.');
+      toast({ title: '댓글 수정 중 오류가 발생했습니다.', variant: 'error' });
     } finally {
       setSavingComment(false);
     }
   };
 
   const handleDelete = async () => {
-    if (!confirm('정말 삭제하시겠습니까?')) return;
+    const ok = await confirm({
+      title: '정말 삭제하시겠습니까?',
+      description: '삭제된 게시글은 복구할 수 없습니다.',
+      variant: 'destructive',
+      confirmText: '삭제',
+    });
+    if (!ok) return;
 
     try {
       setDeleting(true);
       const response = await postApi.delete(Number(boardId), Number(postId));
       if (response.success) {
-        alert('게시글이 삭제되었습니다.');
+        toast({ title: '게시글이 삭제되었습니다.', variant: 'success' });
         router.push(`/clubs/${groupId}/boards/${boardId}`);
       } else {
-        alert(response.error?.message || '삭제에 실패했습니다.');
+        toast({ title: response.error?.message || '삭제에 실패했습니다.', variant: 'error' });
       }
     } catch (err) {
-      alert('삭제 중 오류가 발생했습니다.');
+      toast({ title: '삭제 중 오류가 발생했습니다.', variant: 'error' });
     } finally {
       setDeleting(false);
     }
@@ -194,9 +210,9 @@ export default function PostDetailPage() {
 
   if (loading) {
     return (
-      <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-neutral-50">
+      <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-sky-500" />
+          <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
         </div>
       </main>
     );
@@ -204,10 +220,10 @@ export default function PostDetailPage() {
 
   if (error || !post) {
     return (
-      <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-neutral-50">
+      <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
         <div className="max-w-4xl mx-auto text-center py-20">
           <p className="text-red-500">{error || '게시글을 찾을 수 없습니다.'}</p>
-          <Link href={`/clubs/${groupId}/boards/${boardId}`} className="text-sky-500 hover:underline mt-4 inline-block">
+          <Link href={`/clubs/${groupId}/boards/${boardId}`} className="text-indigo-600 hover:underline mt-4 inline-block">
             ← 목록으로
           </Link>
         </div>
@@ -216,10 +232,10 @@ export default function PostDetailPage() {
   }
 
   return (
-    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-neutral-50">
+    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <Link href={`/clubs/${groupId}/boards/${boardId}`} className="text-sky-500 hover:underline">
+          <Link href={`/clubs/${groupId}/boards/${boardId}`} className="text-indigo-600 hover:underline">
             ← 목록으로
           </Link>
         </div>
@@ -227,12 +243,12 @@ export default function PostDetailPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl p-8 border border-neutral-200 mb-6"
+          className="bg-white rounded-2xl p-8 border border-slate-200 mb-6"
         >
-          <div className="pb-6 border-b border-neutral-200 mb-6">
+          <div className="pb-6 border-b border-slate-200 mb-6">
             <div className="flex items-center gap-2 mb-4">
               {post.isPinned && (
-                <span className="px-3 py-1 bg-sky-100 text-sky-600 text-sm rounded-md font-semibold">
+                <span className="px-3 py-1 bg-indigo-100 text-indigo-600 text-sm rounded-md font-semibold">
                   고정
                 </span>
               )}
@@ -243,19 +259,19 @@ export default function PostDetailPage() {
               )}
             </div>
 
-            <h1 className="font-display font-bold text-3xl sm:text-4xl mb-4 text-neutral-900">
+            <h1 className="font-display font-bold text-3xl sm:text-4xl mb-4 text-slate-900">
               {post.title}
             </h1>
 
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4 text-sm text-neutral-600">
+              <div className="flex items-center gap-4 text-sm text-slate-600">
                 <div className="flex items-center gap-2">
                   <User className="w-4 h-4" />
                   <span className="font-medium">{post.author.name}</span>
                   {post.author.role && (
                     <>
-                      <span className="text-neutral-400">·</span>
-                      <span className="text-xs text-neutral-500">{post.author.role}</span>
+                      <span className="text-slate-400">·</span>
+                      <span className="text-xs text-slate-500">{post.author.role}</span>
                     </>
                   )}
                 </div>
@@ -272,37 +288,38 @@ export default function PostDetailPage() {
           </div>
 
           <div className="prose max-w-none">
-            <div className="text-neutral-700 leading-relaxed whitespace-pre-wrap">
+            <div className="text-slate-700 leading-relaxed whitespace-pre-wrap">
               {post.content}
             </div>
           </div>
 
           {user && post.author && user.userId === post.author.userId && (
-            <div className="flex gap-3 mt-8 pt-6 border-t border-neutral-200">
+            <div className="flex gap-3 mt-8 pt-6 border-t border-slate-200">
               <Link href={`/clubs/${groupId}/boards/${boardId}/posts/${postId}/edit`}>
-                <button className="px-4 py-2 bg-neutral-100 text-neutral-900 rounded-lg font-medium hover:bg-neutral-200 transition-all flex items-center gap-2">
+                <Button variant="secondary" className="gap-2">
                   <Edit className="w-4 h-4" />
                   수정
-                </button>
+                </Button>
               </Link>
-              <button
+              <Button
+                variant="destructive"
                 onClick={handleDelete}
                 disabled={deleting}
-                className="px-4 py-2 bg-red-100 text-red-600 rounded-lg font-medium hover:bg-red-200 transition-all flex items-center gap-2 disabled:opacity-50"
+                className="gap-2"
               >
                 <Trash className="w-4 h-4" />
                 {deleting ? '삭제 중...' : '삭제'}
-              </button>
+              </Button>
             </div>
           )}
         </motion.div>
 
         {/* 댓글 섹션 */}
-        <div className="bg-white rounded-2xl p-8 border border-neutral-200 mb-6">
+        <div className="bg-white rounded-2xl p-8 border border-slate-200 mb-6">
           <div className="flex items-center gap-2 mb-6">
-            <MessageSquare className="w-5 h-5 text-neutral-700" />
-            <h2 className="font-bold text-xl text-neutral-900">
-              댓글 <span className="text-sky-500">{comments.length}</span>
+            <MessageSquare className="w-5 h-5 text-slate-700" />
+            <h2 className="font-bold text-xl text-slate-900">
+              댓글 <span className="text-indigo-600">{comments.length}</span>
             </h2>
           </div>
 
@@ -313,32 +330,32 @@ export default function PostDetailPage() {
               onChange={(e) => setCommentContent(e.target.value)}
               placeholder="댓글을 입력하세요"
               rows={3}
-              className="w-full px-4 py-3 bg-neutral-50 rounded-xl border border-neutral-200 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100 transition-all resize-none"
+              className="w-full px-4 py-3 bg-slate-50 rounded-xl border border-slate-200 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all resize-none"
             />
             <div className="flex justify-end mt-3">
-              <button
+              <Button
                 type="submit"
                 disabled={submittingComment || !commentContent.trim()}
-                className="px-6 py-2 bg-sky-500 text-white rounded-lg font-medium hover:bg-sky-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                className="gap-2"
               >
                 <Send className="w-4 h-4" />
                 {submittingComment ? '작성 중...' : '댓글 작성'}
-              </button>
+              </Button>
             </div>
           </form>
 
           {/* 댓글 목록 */}
           <div className="space-y-4">
             {comments.length === 0 ? (
-              <p className="text-center text-neutral-500 py-8">첫 댓글을 작성해보세요!</p>
+              <p className="text-center text-slate-500 py-8">첫 댓글을 작성해보세요!</p>
             ) : (
               comments.map((comment) => (
-                <div key={comment.commentId} className="p-4 bg-neutral-50 rounded-xl">
+                <div key={comment.commentId} className="p-4 bg-slate-50 rounded-xl">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center gap-2">
-                      <User className="w-4 h-4 text-neutral-500" />
-                      <span className="font-medium text-neutral-900">{comment.author.name}</span>
-                      <span className="text-sm text-neutral-500">
+                      <User className="w-4 h-4 text-slate-500" />
+                      <span className="font-medium text-slate-900">{comment.author.name}</span>
+                      <span className="text-sm text-slate-500">
                         {new Date(comment.createdAt).toLocaleString('ko-KR')}
                       </span>
                     </div>
@@ -346,7 +363,7 @@ export default function PostDetailPage() {
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => handleCommentEditStart(comment)}
-                          className="text-sm text-neutral-500 hover:text-sky-600"
+                          className="text-sm text-slate-500 hover:text-indigo-600"
                         >
                           수정
                         </button>
@@ -366,26 +383,27 @@ export default function PostDetailPage() {
                         value={editingCommentContent}
                         onChange={(e) => setEditingCommentContent(e.target.value)}
                         rows={3}
-                        className="w-full px-4 py-3 bg-white rounded-xl border border-neutral-200 focus:border-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-100 transition-all resize-none"
+                        className="w-full px-4 py-3 bg-white rounded-xl border border-slate-200 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all resize-none"
                       />
                       <div className="flex justify-end gap-2 mt-2">
-                        <button
+                        <Button
+                          variant="secondary"
+                          size="sm"
                           onClick={handleCommentEditCancel}
-                          className="px-4 py-1.5 text-sm bg-neutral-100 text-neutral-700 rounded-lg font-medium hover:bg-neutral-200 transition-colors"
                         >
                           취소
-                        </button>
-                        <button
+                        </Button>
+                        <Button
+                          size="sm"
                           onClick={() => handleCommentEditSave(comment.commentId)}
                           disabled={savingComment || !editingCommentContent.trim()}
-                          className="px-4 py-1.5 text-sm bg-sky-500 text-white rounded-lg font-medium hover:bg-sky-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                           {savingComment ? '저장 중...' : '저장'}
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   ) : (
-                    <p className="text-neutral-700 whitespace-pre-wrap">{comment.content}</p>
+                    <p className="text-slate-700 whitespace-pre-wrap">{comment.content}</p>
                   )}
                 </div>
               ))
@@ -393,15 +411,15 @@ export default function PostDetailPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl p-4 border border-neutral-200">
+        <div className="bg-white rounded-xl p-4 border border-slate-200">
           <div className="flex items-center justify-between">
             <Link href={`/clubs/${groupId}/boards/${boardId}`}>
-              <button className="px-4 py-2 text-neutral-700 hover:text-sky-500 font-medium transition-colors">
+              <button className="px-4 py-2 text-slate-700 hover:text-indigo-600 font-medium transition-colors">
                 ← 이전 글
               </button>
             </Link>
             <Link href={`/clubs/${groupId}/boards/${boardId}`}>
-              <button className="px-4 py-2 text-neutral-700 hover:text-sky-500 font-medium transition-colors">
+              <button className="px-4 py-2 text-slate-700 hover:text-indigo-600 font-medium transition-colors">
                 다음 글 →
               </button>
             </Link>

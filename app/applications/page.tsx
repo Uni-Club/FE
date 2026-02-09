@@ -8,6 +8,7 @@ import { userApi } from '@/lib/api';
 import Loading from '@/components/Loading';
 import ErrorMessage from '@/components/ErrorMessage';
 import AuthGuard from '@/components/AuthGuard';
+import { Button } from '@/components/ui/button';
 
 interface Application {
   applicationId: number;
@@ -67,19 +68,19 @@ function ApplicationsContent() {
       case 'UNDER_REVIEW':
         return <Clock className="w-5 h-5 text-yellow-500" />;
       case 'CANCELLED':
-        return <AlertCircle className="w-5 h-5 text-gray-400" />;
+        return <AlertCircle className="w-5 h-5 text-slate-400" />;
       default:
-        return <FileText className="w-5 h-5 text-blue-500" />;
+        return <FileText className="w-5 h-5 text-indigo-600" />;
     }
   };
 
   const getStatusBadge = (status: string) => {
     const styles: Record<string, string> = {
-      SUBMITTED: 'bg-blue-100 text-blue-700',
+      SUBMITTED: 'bg-indigo-100 text-indigo-700',
       UNDER_REVIEW: 'bg-yellow-100 text-yellow-700',
       ACCEPTED: 'bg-green-100 text-green-700',
       REJECTED: 'bg-red-100 text-red-700',
-      CANCELLED: 'bg-gray-100 text-gray-500',
+      CANCELLED: 'bg-slate-100 text-slate-500',
     };
     const labels: Record<string, string> = {
       SUBMITTED: '제출완료',
@@ -89,7 +90,7 @@ function ApplicationsContent() {
       CANCELLED: '취소됨',
     };
     return (
-      <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${styles[status] || 'bg-gray-100 text-gray-600'}`}>
+      <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${styles[status] || 'bg-slate-100 text-slate-600'}`}>
         {labels[status] || status}
       </span>
     );
@@ -98,12 +99,12 @@ function ApplicationsContent() {
   if (loading) return <Loading />;
 
   return (
-    <main className="pt-20 pb-12 px-4 sm:px-6 lg:px-8 min-h-screen bg-gray-50">
+    <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">내 지원 내역</h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <h1 className="text-2xl font-bold text-slate-900">내 지원 내역</h1>
+          <p className="text-sm text-slate-500 mt-1">
             총 {applications.length}개의 지원서
           </p>
         </div>
@@ -112,7 +113,7 @@ function ApplicationsContent() {
         {error && <ErrorMessage message={error} />}
 
         {/* Status Filter */}
-        <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
+        <div className="bg-white rounded-lg border border-slate-200 p-4 mb-6">
           <div className="flex items-center gap-2 overflow-x-auto">
             {statusFilters.map((filter) => (
               <button
@@ -120,8 +121,8 @@ function ApplicationsContent() {
                 onClick={() => setStatusFilter(filter.value)}
                 className={`px-3 py-1.5 text-sm rounded-full whitespace-nowrap transition-colors ${
                   statusFilter === filter.value
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-indigo-600 text-white'
+                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                 }`}
               >
                 {filter.label}
@@ -141,27 +142,27 @@ function ApplicationsContent() {
                 transition={{ duration: 0.2, delay: index * 0.05 }}
               >
                 <Link href={`/applications/${app.applicationId}`}>
-                  <div className="bg-white rounded-lg border border-gray-200 p-5 hover:border-blue-300 hover:shadow-md transition-all">
+                  <div className="bg-white rounded-lg border border-slate-200 p-5 hover:border-indigo-300 hover:shadow-md transition-all">
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex items-center gap-3">
                         {getStatusIcon(app.status)}
                         <div>
-                          <h3 className="font-bold text-gray-900">
+                          <h3 className="font-bold text-slate-900">
                             {app.recruitmentTitle}
                           </h3>
-                          <p className="text-sm text-gray-500">{app.groupName}</p>
+                          <p className="text-sm text-slate-500">{app.groupName}</p>
                         </div>
                       </div>
                       {getStatusBadge(app.status)}
                     </div>
 
                     {app.motivation && (
-                      <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                      <p className="text-sm text-slate-600 line-clamp-2 mb-3">
                         {app.motivation}
                       </p>
                     )}
 
-                    <div className="flex items-center justify-between text-xs text-gray-400">
+                    <div className="flex items-center justify-between text-xs text-slate-400">
                       <span>
                         지원일: {new Date(app.appliedAt).toLocaleDateString('ko-KR')}
                       </span>
@@ -186,22 +187,21 @@ function ApplicationsContent() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-16 bg-white rounded-lg border border-gray-200">
-            <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
-              <FileText className="w-6 h-6 text-gray-400" />
+          <div className="text-center py-16 bg-white rounded-lg border border-slate-200">
+            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-3">
+              <FileText className="w-6 h-6 text-slate-400" />
             </div>
-            <h3 className="font-medium text-gray-900 mb-1">
+            <h3 className="font-medium text-slate-900 mb-1">
               지원 내역이 없습니다
             </h3>
-            <p className="text-sm text-gray-500 mb-4">
+            <p className="text-sm text-slate-500 mb-4">
               동아리 모집공고에 지원해보세요
             </p>
-            <Link
-              href="/recruitments"
-              className="inline-flex items-center px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors"
-            >
-              모집공고 보기
-            </Link>
+            <Button asChild>
+              <Link href="/recruitments">
+                모집공고 보기
+              </Link>
+            </Button>
           </div>
         )}
       </div>

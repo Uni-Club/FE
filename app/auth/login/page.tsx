@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/toast';
 
 function LoginForm() {
   const [email, setEmail] = useState('');
@@ -16,6 +18,7 @@ function LoginForm() {
   const { login } = useAuth();
   const searchParams = useSearchParams();
   const registered = searchParams.get('registered');
+  const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,36 +27,35 @@ function LoginForm() {
 
     try {
       await login(email, password, remember);
-      // Redirect is handled by AuthContext
+      toast({ title: '로그인 성공', variant: 'success' });
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : '로그인에 실패했습니다';
       setError(message);
+      toast({ title: '로그인 실패', description: message, variant: 'error' });
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <main className="min-h-screen pt-14 flex items-center justify-center bg-gray-50 px-4">
+    <main className="min-h-screen pt-24 flex items-center justify-center bg-slate-50 px-4">
       <div className="w-full max-w-sm">
         {/* 헤더 */}
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex items-center gap-2 mb-6">
-            <div className="w-10 h-10 bg-blue-500 rounded-xl flex items-center justify-center">
-              <span className="text-white font-bold text-lg">U</span>
-            </div>
+            <img src="/icon.png" alt="UNICLUB" className="w-10 h-10 rounded-xl" />
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">로그인</h1>
-          <p className="text-gray-500 text-sm mt-1">
+          <h1 className="text-2xl font-bold text-slate-900">로그인</h1>
+          <p className="text-slate-500 text-sm mt-1">
             계정이 없으신가요?{' '}
-            <Link href="/auth/signup" className="text-blue-500 hover:underline">
+            <Link href="/auth/signup" className="text-indigo-600 hover:text-indigo-700 hover:underline">
               회원가입
             </Link>
           </p>
         </div>
 
         {/* 폼 */}
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white rounded-xl border border-slate-200 p-6">
           {registered && (
             <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-600 text-sm">
               회원가입이 완료되었습니다. 로그인해주세요.
@@ -69,11 +71,11 @@ function LoginForm() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* 아이디 (이메일) */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="email" className="block text-sm font-medium text-slate-700 mb-1.5">
                 아이디 (이메일)
               </label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type="email"
                   id="email"
@@ -81,18 +83,18 @@ function LoginForm() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="example@university.ac.kr"
                   required
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                  className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 text-sm"
                 />
               </div>
             </div>
 
             {/* 비밀번호 */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="password" className="block text-sm font-medium text-slate-700 mb-1.5">
                 비밀번호
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   id="password"
@@ -100,12 +102,12 @@ function LoginForm() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="비밀번호 입력"
                   required
-                  className="w-full pl-10 pr-10 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                  className="w-full pl-10 pr-10 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 text-sm"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -119,34 +121,30 @@ function LoginForm() {
                   type="checkbox"
                   checked={remember}
                   onChange={(e) => setRemember(e.target.checked)}
-                  className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                  className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                 />
-                <span className="text-gray-600">로그인 유지</span>
+                <span className="text-slate-600">로그인 유지</span>
               </label>
-              <Link href="/auth/forgot-password" className="text-blue-500 hover:underline">
+              <Link href="/auth/forgot-password" className="text-indigo-600 hover:text-indigo-700 hover:underline">
                 비밀번호 찾기
               </Link>
             </div>
 
             {/* 제출 버튼 */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full py-2.5 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors"
-            >
+            <Button type="submit" disabled={loading} className="w-full" size="lg">
               {loading ? '로그인 중...' : '로그인'}
-            </button>
+            </Button>
           </form>
 
           {/* 구분선 */}
           <div className="my-5 flex items-center gap-3">
-            <div className="flex-1 h-px bg-gray-200" />
-            <span className="text-xs text-gray-400">또는</span>
-            <div className="flex-1 h-px bg-gray-200" />
+            <div className="flex-1 h-px bg-slate-200" />
+            <span className="text-xs text-slate-400">또는</span>
+            <div className="flex-1 h-px bg-slate-200" />
           </div>
 
           {/* 소셜 로그인 */}
-          <button className="w-full py-2.5 border border-gray-200 rounded-lg font-medium text-gray-700 hover:bg-gray-50 transition-colors flex items-center justify-center gap-2 text-sm">
+          <Button variant="outline" className="w-full">
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -154,7 +152,7 @@ function LoginForm() {
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" />
             </svg>
             Google로 계속하기
-          </button>
+          </Button>
         </div>
       </div>
     </main>
@@ -164,8 +162,8 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen pt-14 flex items-center justify-center bg-gray-50 px-4">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <main className="min-h-screen pt-24 flex items-center justify-center bg-slate-50 px-4">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
       </main>
     }>
       <LoginForm />

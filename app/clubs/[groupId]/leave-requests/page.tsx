@@ -8,9 +8,13 @@ import { groupApi } from '@/lib/api';
 import Loading from '@/components/Loading';
 import ErrorMessage from '@/components/ErrorMessage';
 import AuthGuard from '@/components/AuthGuard';
+import { useToast } from '@/components/ui/toast';
+import { usePrompt } from '@/components/ui/confirm-dialog';
 
 function LeaveRequestsContent() {
   const params = useParams();
+  const { toast } = useToast();
+  const promptFn = usePrompt();
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -34,7 +38,7 @@ function LeaveRequestsContent() {
   };
 
   const handleApprove = async (requestId: number) => {
-    const note = prompt('승인 사유를 입력하세요 (선택사항):');
+    const note = await promptFn({ title: '승인 사유 입력', placeholder: '승인 사유를 입력하세요 (선택사항)' });
     try {
       const response = await groupApi.approveLeaveRequest(
         Number(params.groupId),
@@ -42,18 +46,18 @@ function LeaveRequestsContent() {
         note || undefined
       );
       if (response.success) {
-        alert('탈퇴 신청이 승인되었습니다.');
+        toast({ title: '탈퇴 신청이 승인되었습니다.', variant: 'success' });
         loadRequests();
       } else {
-        alert(response.error?.message || '승인에 실패했습니다.');
+        toast({ title: response.error?.message || '승인에 실패했습니다.', variant: 'error' });
       }
     } catch (err: any) {
-      alert(err.message || '승인에 실패했습니다.');
+      toast({ title: err.message || '승인에 실패했습니다.', variant: 'error' });
     }
   };
 
   const handleReject = async (requestId: number) => {
-    const note = prompt('거절 사유를 입력하세요:');
+    const note = await promptFn({ title: '거절 사유 입력', placeholder: '거절 사유를 입력하세요' });
     if (!note) return;
 
     try {
@@ -63,26 +67,26 @@ function LeaveRequestsContent() {
         note
       );
       if (response.success) {
-        alert('탈퇴 신청이 거절되었습니다.');
+        toast({ title: '탈퇴 신청이 거절되었습니다.', variant: 'success' });
         loadRequests();
       } else {
-        alert(response.error?.message || '거절에 실패했습니다.');
+        toast({ title: response.error?.message || '거절에 실패했습니다.', variant: 'error' });
       }
     } catch (err: any) {
-      alert(err.message || '거절에 실패했습니다.');
+      toast({ title: err.message || '거절에 실패했습니다.', variant: 'error' });
     }
   };
 
   if (loading) return <Loading />;
 
   return (
-    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen">
+    <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <h1 className="font-display font-bold text-4xl text-slate-800 mb-2">
+          <h1 className="font-bold text-4xl text-slate-800 mb-2">
             탈퇴 신청 관리
           </h1>
-          <p className="text-slate-800/60">총 {requests.length}개의 신청</p>
+          <p className="text-slate-500">총 {requests.length}개의 신청</p>
         </div>
 
         {error && <ErrorMessage message={error} />}
@@ -98,21 +102,21 @@ function LeaveRequestsContent() {
             >
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-4">
-                  <div className="w-12 h-12 bg-gradient-to-r from-orange-400 to-rose-400 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-gradient-to-r from-indigo-500 to-violet-500 rounded-full flex items-center justify-center">
                     <UserMinus className="w-6 h-6 text-white" />
                   </div>
                   <div>
                     <h3 className="font-bold text-lg text-slate-800 mb-1">
                       {request.user.name}
                     </h3>
-                    <p className="text-sm text-slate-800/60 mb-3">
+                    <p className="text-sm text-slate-500 mb-3">
                       {request.user.email}
                     </p>
-                    <div className="bg-stone-100 rounded-lg p-3 mb-3">
+                    <div className="bg-slate-100 rounded-lg p-3 mb-3">
                       <p className="text-sm font-medium text-slate-800 mb-1">탈퇴 사유:</p>
-                      <p className="text-slate-800/70">{request.reason || '없음'}</p>
+                      <p className="text-slate-600">{request.reason || '없음'}</p>
                     </div>
-                    <p className="text-xs text-slate-800/50">
+                    <p className="text-xs text-slate-400">
                       신청일: {new Date(request.requestedAt).toLocaleDateString()}
                     </p>
 
@@ -124,9 +128,9 @@ function LeaveRequestsContent() {
                           </span>
                         </p>
                         {request.reviewNote && (
-                          <p className="text-sm text-slate-800/70">의견: {request.reviewNote}</p>
+                          <p className="text-sm text-slate-600">의견: {request.reviewNote}</p>
                         )}
-                        <p className="text-xs text-slate-800/50">
+                        <p className="text-xs text-slate-400">
                           처리일: {new Date(request.reviewedAt).toLocaleDateString()}
                         </p>
                       </div>
@@ -141,7 +145,7 @@ function LeaveRequestsContent() {
                         ? 'bg-green-100 text-green-700'
                         : request.status === 'REJECTED'
                         ? 'bg-red-100 text-red-700'
-                        : 'bg-amber-50 text-slate-800'
+                        : 'bg-slate-100 text-slate-800'
                     }`}
                   >
                     {request.status === 'APPROVED' && '승인됨'}
@@ -174,7 +178,7 @@ function LeaveRequestsContent() {
         </div>
 
         {requests.length === 0 && !loading && (
-          <div className="text-center py-20 text-slate-800/60">
+          <div className="text-center py-20 text-slate-500">
             탈퇴 신청이 없습니다.
           </div>
         )}

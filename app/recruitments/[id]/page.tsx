@@ -9,6 +9,8 @@ import { recruitmentApi, groupApi } from '@/lib/api';
 import Loading from '@/components/Loading';
 import ErrorMessage from '@/components/ErrorMessage';
 import { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/toast';
 
 export default function RecruitmentDetailPage() {
   const params = useParams();
@@ -16,6 +18,7 @@ export default function RecruitmentDetailPage() {
   const { isAuthenticated, user } = useAuth();
   const { data: recruitment, isLoading, error, refetch } = useRecruitment(params.id as string);
   const [isGroupAdmin, setIsGroupAdmin] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkAdminRole = async () => {
@@ -57,23 +60,23 @@ export default function RecruitmentDetailPage() {
   if (!recruitment) return null;
 
   return (
-    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-gray-50">
+    <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
       <div className="max-w-4xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-white rounded-2xl p-8 shadow-lg border border-gray-200"
+          className="bg-white rounded-2xl p-8 shadow-lg border border-slate-200"
         >
           {/* Header */}
           <div className="mb-8">
-            <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
+            <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
               <MapPin className="w-4 h-4" />
               <span>{recruitment.group?.groupName} {recruitment.group?.school?.schoolName && `• ${recruitment.group.school.schoolName}`}</span>
             </div>
-            <h1 className="font-bold text-4xl text-gray-900 mb-6">
+            <h1 className="font-bold text-4xl text-slate-900 mb-6">
               {recruitment.title}
             </h1>
-            <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+            <div className="flex flex-wrap gap-4 text-sm text-slate-500">
               <div className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" />
                 <span>
@@ -94,22 +97,23 @@ export default function RecruitmentDetailPage() {
 
           {/* Content */}
           <div className="prose max-w-none mb-8">
-            <div className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+            <div className="text-slate-700 leading-relaxed whitespace-pre-wrap">
               {recruitment.content}
             </div>
           </div>
 
           {/* Apply Button */}
-          <div className="pt-8 border-t border-gray-200 space-y-4">
+          <div className="pt-8 border-t border-slate-200 space-y-4">
             {recruitment.status === 'PUBLISHED' ? (
-              <button
+              <Button
+                size="lg"
+                className="w-full py-4 text-base font-bold"
                 onClick={handleApply}
-                className="w-full py-4 bg-blue-500 text-white font-bold rounded-xl hover:bg-blue-600 hover:shadow-lg transition-all"
               >
                 지원하기
-              </button>
+              </Button>
             ) : (
-              <div className="w-full py-4 bg-gray-100 text-gray-400 font-bold rounded-xl text-center cursor-not-allowed">
+              <div className="w-full py-4 bg-slate-100 text-slate-400 font-bold rounded-xl text-center cursor-not-allowed">
                 {recruitment.status === 'CLOSED' ? '마감된 공고입니다' : '지원 기간이 아닙니다'}
               </div>
             )}
@@ -125,12 +129,12 @@ export default function RecruitmentDetailPage() {
                         await recruitmentApi.updateStatus(recruitment.recruitmentId, status as 'DRAFT' | 'PUBLISHED' | 'CLOSED' | 'ARCHIVED');
                         refetch();
                       } catch (e) {
-                        alert('상태 변경 실패');
+                        toast({ title: '상태 변경 실패', variant: 'error' });
                       }
                     }}
                     className={`px-3 py-1 text-xs rounded-full border ${recruitment.status === status
-                        ? 'bg-gray-900 text-white border-gray-900'
-                        : 'bg-white text-gray-600 border-gray-200 hover:border-gray-900'
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-600'
                       }`}
                   >
                     {status}

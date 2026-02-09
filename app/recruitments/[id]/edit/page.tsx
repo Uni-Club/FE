@@ -7,10 +7,13 @@ import { recruitmentApi } from '@/lib/api';
 import Loading from '@/components/Loading';
 import ErrorMessage from '@/components/ErrorMessage';
 import AuthGuard from '@/components/AuthGuard';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/toast';
 
 function EditRecruitmentContent() {
   const params = useParams();
   const router = useRouter();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -54,7 +57,7 @@ function EditRecruitmentContent() {
       });
 
       if (response.success) {
-        alert('모집공고가 수정되었습니다!');
+        toast({ title: '모집공고가 수정되었습니다!', variant: 'success' });
         router.push(`/recruitments/${params.id}`);
       } else {
         setError(response.error?.message || '수정에 실패했습니다.');
@@ -69,14 +72,14 @@ function EditRecruitmentContent() {
   if (loading) return <Loading />;
 
   return (
-    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen">
+    <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
       <div className="max-w-3xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-2xl p-8 shadow-md"
         >
-          <h1 className="font-display font-bold text-3xl text-slate-800 mb-8">
+          <h1 className="font-bold text-3xl text-slate-900 mb-8">
             모집공고 수정
           </h1>
 
@@ -85,27 +88,27 @@ function EditRecruitmentContent() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label className="block font-bold text-slate-800 mb-2">
-                제목 <span className="text-orange-500">*</span>
+                제목 <span className="text-rose-500">*</span>
               </label>
               <input
                 type="text"
                 required
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                className="w-full px-4 py-3 bg-white rounded-xl border border-slate-200 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200 transition-all"
+                className="w-full px-4 py-3 bg-white rounded-xl border border-slate-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition-all"
               />
             </div>
 
             <div>
               <label className="block font-bold text-slate-800 mb-2">
-                내용 <span className="text-orange-500">*</span>
+                내용 <span className="text-rose-500">*</span>
               </label>
               <textarea
                 required
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 rows={10}
-                className="w-full px-4 py-3 bg-white rounded-xl border border-slate-200 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200 transition-all resize-none"
+                className="w-full px-4 py-3 bg-white rounded-xl border border-slate-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition-all resize-none"
               />
             </div>
 
@@ -118,25 +121,26 @@ function EditRecruitmentContent() {
                 value={formData.capacity}
                 onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
                 placeholder="20 (비워두면 제한없음)"
-                className="w-full px-4 py-3 bg-white rounded-xl border border-slate-200 focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-200 transition-all"
+                className="w-full px-4 py-3 bg-white rounded-xl border border-slate-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 transition-all"
               />
             </div>
 
             <div className="flex gap-4 pt-6">
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                className="flex-1 py-4 h-auto font-bold"
                 onClick={() => router.back()}
-                className="flex-1 py-4 bg-amber-50 text-slate-800 font-bold rounded-xl hover:bg-amber-50/80 transition-all"
               >
                 취소
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 py-4 bg-gradient-to-r from-orange-400 to-rose-400 text-white font-bold rounded-xl hover:shadow-lg transition-all disabled:opacity-50"
+                className="flex-1 py-4 h-auto font-bold"
               >
                 {submitting ? '저장 중...' : '저장하기'}
-              </button>
+              </Button>
             </div>
           </form>
         </motion.div>

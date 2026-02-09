@@ -4,10 +4,13 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { recruitmentApi } from '@/lib/api';
 import AuthGuard from '@/components/AuthGuard';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/toast';
 
 function ApplyContent() {
   const params = useParams();
   const router = useRouter();
+  const { toast } = useToast();
   const [recruitment, setRecruitment] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -48,7 +51,7 @@ function ApplyContent() {
       });
 
       if (response.success) {
-        alert('지원서가 제출되었습니다!');
+        toast({ title: '지원서가 제출되었습니다!', variant: 'success' });
         router.push('/profile');
       } else {
         setError(response.error?.message || '지원에 실패했습니다.');
@@ -62,23 +65,23 @@ function ApplyContent() {
 
   if (loading) {
     return (
-      <main className="min-h-screen pt-14 flex items-center justify-center bg-gray-50">
-        <div className="text-gray-500">로딩 중...</div>
+      <main className="min-h-screen pt-24 flex items-center justify-center bg-slate-50">
+        <div className="text-slate-500">로딩 중...</div>
       </main>
     );
   }
 
   if (error && !recruitment) {
     return (
-      <main className="min-h-screen pt-14 flex items-center justify-center bg-gray-50 px-4">
+      <main className="min-h-screen pt-24 flex items-center justify-center bg-slate-50 px-4">
         <div className="text-center">
           <p className="text-red-500 mb-4">{error}</p>
-          <button
+          <Button
+            variant="secondary"
             onClick={() => router.back()}
-            className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
           >
             돌아가기
-          </button>
+          </Button>
         </div>
       </main>
     );
@@ -87,14 +90,14 @@ function ApplyContent() {
   if (!recruitment) return null;
 
   return (
-    <main className="min-h-screen pt-14 pb-12 bg-gray-50 px-4">
+    <main className="min-h-screen pt-24 pb-16 bg-slate-50 px-4">
       <div className="max-w-2xl mx-auto py-8">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">지원서 작성</h1>
-          <p className="text-gray-500 text-sm mt-1">{recruitment.title}</p>
+          <h1 className="text-2xl font-bold text-slate-900">지원서 작성</h1>
+          <p className="text-slate-500 text-sm mt-1">{recruitment.title}</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white rounded-xl border border-slate-200 p-6">
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
               {error}
@@ -104,7 +107,7 @@ function ApplyContent() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* 지원 동기 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
                 지원 동기 <span className="text-red-500">*</span>
               </label>
               <textarea
@@ -113,14 +116,14 @@ function ApplyContent() {
                 onChange={(e) => setMotivation(e.target.value)}
                 rows={5}
                 placeholder="지원 동기를 작성해주세요"
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm resize-none"
+                className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 text-sm resize-none"
               />
             </div>
 
             {/* Custom Fields */}
             {recruitment.customFields?.map((field: any, index: number) => (
               <div key={index}>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">
                   {field.fieldName}
                   {field.required && <span className="text-red-500"> *</span>}
                 </label>
@@ -131,14 +134,14 @@ function ApplyContent() {
                     onChange={(e) => setAnswers({ ...answers, [field.fieldName]: e.target.value })}
                     rows={4}
                     placeholder={field.placeholder || ''}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm resize-none"
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 text-sm resize-none"
                   />
                 ) : field.fieldType === 'select' ? (
                   <select
                     required={field.required}
                     value={answers[field.fieldName] || ''}
                     onChange={(e) => setAnswers({ ...answers, [field.fieldName]: e.target.value })}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm bg-white"
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 text-sm bg-white"
                   >
                     <option value="">선택하세요</option>
                     {field.options?.map((option: string, i: number) => (
@@ -152,7 +155,7 @@ function ApplyContent() {
                     value={answers[field.fieldName] || ''}
                     onChange={(e) => setAnswers({ ...answers, [field.fieldName]: e.target.value })}
                     placeholder={field.placeholder || ''}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 text-sm"
                   />
                 ) : (
                   <input
@@ -161,7 +164,7 @@ function ApplyContent() {
                     value={answers[field.fieldName] || ''}
                     onChange={(e) => setAnswers({ ...answers, [field.fieldName]: e.target.value })}
                     placeholder={field.placeholder || ''}
-                    className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                    className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 text-sm"
                   />
                 )}
               </div>
@@ -169,20 +172,21 @@ function ApplyContent() {
 
             {/* 버튼 */}
             <div className="flex gap-3 pt-4">
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                className="flex-1"
                 onClick={() => router.back()}
-                className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
               >
                 취소
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 py-2.5 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors"
+                className="flex-1"
               >
                 {submitting ? '제출 중...' : '제출하기'}
-              </button>
+              </Button>
             </div>
           </form>
         </div>

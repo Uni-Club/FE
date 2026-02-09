@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import { Button } from '@/components/ui/button';
 
 export default function Error({
   error,
@@ -14,7 +15,7 @@ export default function Error({
   }, [error]);
 
   return (
-    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-gray-50 flex items-center justify-center">
+    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50 flex items-center justify-center">
       <div className="text-center max-w-md mx-auto">
         <div className="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-8">
           <svg
@@ -31,18 +32,15 @@ export default function Error({
             />
           </svg>
         </div>
-        <h1 className="font-bold text-3xl text-gray-900 mb-4">
+        <h1 className="font-bold text-3xl text-slate-900 mb-4">
           오류가 발생했습니다
         </h1>
-        <p className="text-gray-500 mb-8 leading-relaxed">
+        <p className="text-slate-500 mb-8 leading-relaxed">
           예기치 않은 오류가 발생했습니다. 잠시 후 다시 시도해주세요.
         </p>
-        <button
-          onClick={reset}
-          className="inline-flex items-center px-6 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors"
-        >
+        <Button onClick={reset}>
           다시 시도
-        </button>
+        </Button>
       </div>
     </main>
   );

@@ -5,9 +5,12 @@ import { useRouter } from 'next/navigation';
 import { User, Phone, GraduationCap, ChevronDown } from 'lucide-react';
 import { userApi, schoolApi } from '@/lib/api';
 import AuthGuard from '@/components/AuthGuard';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/toast';
 
 function ProfileEditContent() {
   const router = useRouter();
+  const { toast } = useToast();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -43,7 +46,7 @@ function ProfileEditContent() {
 
       if (schoolsRes.data) {
         const data: any = schoolsRes.data;
-        setSchools(data.content || []);
+        setSchools(Array.isArray(data) ? data : data.content || []);
       }
     } catch (err) {
       setError('프로필을 불러오는데 실패했습니다.');
@@ -64,7 +67,7 @@ function ProfileEditContent() {
         schoolId: formData.schoolId ? Number(formData.schoolId) : undefined,
       });
       if (response.success) {
-        alert('프로필이 수정되었습니다.');
+        toast({ title: '프로필이 수정되었습니다.', variant: 'success' });
         router.push('/profile');
       } else {
         setError(response.error?.message || '수정에 실패했습니다.');
@@ -78,21 +81,21 @@ function ProfileEditContent() {
 
   if (loading) {
     return (
-      <main className="min-h-screen pt-14 flex items-center justify-center bg-gray-50">
-        <div className="text-gray-500">로딩 중...</div>
+      <main className="min-h-screen pt-24 flex items-center justify-center bg-slate-50">
+        <div className="text-slate-500">로딩 중...</div>
       </main>
     );
   }
 
   return (
-    <main className="min-h-screen pt-14 pb-12 flex items-center justify-center bg-gray-50 px-4">
+    <main className="min-h-screen pt-24 pb-16 flex items-center justify-center bg-slate-50 px-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">프로필 수정</h1>
-          <p className="text-gray-500 text-sm mt-1">회원 정보를 수정합니다</p>
+          <h1 className="text-2xl font-bold text-slate-900">프로필 수정</h1>
+          <p className="text-slate-500 text-sm mt-1">회원 정보를 수정합니다</p>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white rounded-xl border border-slate-200 p-6">
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
               {error}
@@ -102,69 +105,69 @@ function ProfileEditContent() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* 이름 */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1.5">
+              <label htmlFor="name" className="block text-sm font-medium text-slate-700 mb-1.5">
                 이름 <span className="text-red-500">*</span>
               </label>
               <div className="relative">
-                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type="text"
                   id="name"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                  className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 text-sm"
                 />
               </div>
             </div>
 
             {/* 전화번호 */}
             <div>
-              <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1.5">
-                전화번호 <span className="text-gray-400 text-xs">(선택)</span>
+              <label htmlFor="phone" className="block text-sm font-medium text-slate-700 mb-1.5">
+                전화번호 <span className="text-slate-400 text-xs">(선택)</span>
               </label>
               <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type="tel"
                   id="phone"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                   placeholder="010-1234-5678"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                  className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 text-sm"
                 />
               </div>
             </div>
 
             {/* 학번 */}
             <div>
-              <label htmlFor="studentId" className="block text-sm font-medium text-gray-700 mb-1.5">
-                학번 <span className="text-gray-400 text-xs">(선택)</span>
+              <label htmlFor="studentId" className="block text-sm font-medium text-slate-700 mb-1.5">
+                학번 <span className="text-slate-400 text-xs">(선택)</span>
               </label>
               <div className="relative">
-                <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                <GraduationCap className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                 <input
                   type="text"
                   id="studentId"
                   value={formData.studentId}
                   onChange={(e) => setFormData({ ...formData, studentId: e.target.value })}
                   placeholder="20231234"
-                  className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
+                  className="w-full pl-10 pr-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 text-sm"
                 />
               </div>
             </div>
 
             {/* 학교 */}
             <div>
-              <label htmlFor="schoolId" className="block text-sm font-medium text-gray-700 mb-1.5">
-                학교 <span className="text-gray-400 text-xs">(선택)</span>
+              <label htmlFor="schoolId" className="block text-sm font-medium text-slate-700 mb-1.5">
+                학교 <span className="text-slate-400 text-xs">(선택)</span>
               </label>
               <div className="relative">
                 <select
                   id="schoolId"
                   value={formData.schoolId}
                   onChange={(e) => setFormData({ ...formData, schoolId: e.target.value })}
-                  className="w-full pl-4 pr-10 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:border-blue-500 text-sm appearance-none bg-white"
+                  className="w-full pl-4 pr-10 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 text-sm appearance-none bg-white"
                 >
                   <option value="">학교 선택</option>
                   {schools.map((school) => (
@@ -173,26 +176,27 @@ function ProfileEditContent() {
                     </option>
                   ))}
                 </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
               </div>
             </div>
 
             {/* 버튼 */}
             <div className="flex gap-3 pt-4">
-              <button
+              <Button
                 type="button"
+                variant="secondary"
+                className="flex-1"
                 onClick={() => router.back()}
-                className="flex-1 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
               >
                 취소
-              </button>
-              <button
+              </Button>
+              <Button
                 type="submit"
                 disabled={submitting}
-                className="flex-1 py-2.5 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed transition-colors"
+                className="flex-1"
               >
                 {submitting ? '저장 중...' : '저장하기'}
-              </button>
+              </Button>
             </div>
           </form>
         </div>
