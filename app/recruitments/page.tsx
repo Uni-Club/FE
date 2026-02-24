@@ -111,12 +111,12 @@ export default function RecruitmentsPage() {
                   transition={{ duration: 0.4, delay: index * 0.05 }}
                 >
                   <Link href={`/recruitments/${recruitment.recruitmentId}`}>
-                    <div className="group bg-white rounded-2xl p-6 hover:shadow-lg transition-all duration-300 border border-slate-200">
-                      <h3 className="font-bold text-xl text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors line-clamp-2">
+                    <div className="club bg-white rounded-2xl p-6 hover:shadow-lg transition-all duration-300 border border-slate-200">
+                      <h3 className="font-bold text-xl text-slate-900 mb-2 club-hover:text-indigo-600 transition-colors line-clamp-2">
                         {recruitment.title}
                       </h3>
                       <p className="text-sm text-slate-500 mb-4">
-                        {recruitment.group?.groupName} {recruitment.group?.school?.schoolName && `• ${recruitment.group.school.schoolName}`}
+                        {recruitment.club?.clubName} {recruitment.club?.school?.schoolName && `• ${recruitment.club.school.schoolName}`}
                       </p>
                       <div className="flex items-center gap-4 text-sm text-slate-500 mb-4">
                         <div className="flex items-center gap-1">

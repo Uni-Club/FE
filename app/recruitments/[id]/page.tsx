@@ -5,7 +5,7 @@ import { Calendar, Users, Eye, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useRecruitment } from '@/hooks/useRecruitments';
 import { useAuth } from '@/contexts/AuthContext';
-import { recruitmentApi, groupApi } from '@/lib/api';
+import { recruitmentApi, clubApi } from '@/lib/api';
 import Loading from '@/components/Loading';
 import ErrorMessage from '@/components/ErrorMessage';
 import { useState, useEffect } from 'react';
@@ -17,30 +17,30 @@ export default function RecruitmentDetailPage() {
   const router = useRouter();
   const { isAuthenticated, user } = useAuth();
   const { data: recruitment, isLoading, error, refetch } = useRecruitment(params.id as string);
-  const [isGroupAdmin, setIsGroupAdmin] = useState(false);
+  const [isClubAdmin, setIsClubAdmin] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     const checkAdminRole = async () => {
-      if (!user || !recruitment?.group?.groupId) {
-        setIsGroupAdmin(false);
+      if (!user || !recruitment?.club?.clubId) {
+        setIsClubAdmin(false);
         return;
       }
       try {
-        const response = await groupApi.getMembers(recruitment.group.groupId);
+        const response = await clubApi.getMembers(recruitment.club.clubId);
         if (response.success && Array.isArray(response.data)) {
           const currentMember = (response.data as any[]).find(
             (member: any) => member.userId === user.userId || member.user?.userId === user.userId
           );
           if (currentMember) {
-            const role = currentMember.role || currentMember.groupRole;
-            setIsGroupAdmin(role === 'ADMIN' || role === 'LEADER' || role === 'OWNER');
+            const role = currentMember.role || currentMember.clubRole;
+            setIsClubAdmin(role === 'ADMIN' || role === 'LEADER' || role === 'OWNER');
           } else {
-            setIsGroupAdmin(false);
+            setIsClubAdmin(false);
           }
         }
       } catch {
-        setIsGroupAdmin(false);
+        setIsClubAdmin(false);
       }
     };
 
@@ -71,7 +71,7 @@ export default function RecruitmentDetailPage() {
           <div className="mb-8">
             <div className="flex items-center gap-2 text-sm text-slate-500 mb-4">
               <MapPin className="w-4 h-4" />
-              <span>{recruitment.group?.groupName} {recruitment.group?.school?.schoolName && `• ${recruitment.group.school.schoolName}`}</span>
+              <span>{recruitment.club?.clubName} {recruitment.club?.school?.schoolName && `• ${recruitment.club.school.schoolName}`}</span>
             </div>
             <h1 className="font-bold text-4xl text-slate-900 mb-6">
               {recruitment.title}
@@ -119,7 +119,7 @@ export default function RecruitmentDetailPage() {
             )}
 
             {/* Admin Controls */}
-            {isGroupAdmin && (
+            {isClubAdmin && (
               <div className="flex gap-2 justify-end">
                 {['DRAFT', 'PUBLISHED', 'CLOSED'].map((status) => (
                   <button

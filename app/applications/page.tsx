@@ -14,8 +14,8 @@ interface Application {
   applicationId: number;
   recruitmentId: number;
   recruitmentTitle: string;
-  groupId: number;
-  groupName: string;
+  clubId: number;
+  clubName: string;
   status: 'SUBMITTED' | 'UNDER_REVIEW' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED';
   motivation: string;
   appliedAt: string;
@@ -150,7 +150,7 @@ function ApplicationsContent() {
                           <h3 className="font-bold text-slate-900">
                             {app.recruitmentTitle}
                           </h3>
-                          <p className="text-sm text-slate-500">{app.groupName}</p>
+                          <p className="text-sm text-slate-500">{app.clubName}</p>
                         </div>
                       </div>
                       {getStatusBadge(app.status)}

@@ -45,7 +45,7 @@ export default function PostDetailPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const confirm = useConfirm();
-  const groupId = params.groupId as string;
+  const clubId = params.clubId as string;
   const boardId = params.boardId as string;
   const postId = params.postId as string;
 
@@ -197,7 +197,7 @@ export default function PostDetailPage() {
       const response = await postApi.delete(Number(boardId), Number(postId));
       if (response.success) {
         toast({ title: '게시글이 삭제되었습니다.', variant: 'success' });
-        router.push(`/clubs/${groupId}/boards/${boardId}`);
+        router.push(`/clubs/${clubId}/boards/${boardId}`);
       } else {
         toast({ title: response.error?.message || '삭제에 실패했습니다.', variant: 'error' });
       }
@@ -223,7 +223,7 @@ export default function PostDetailPage() {
       <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
         <div className="max-w-4xl mx-auto text-center py-20">
           <p className="text-red-500">{error || '게시글을 찾을 수 없습니다.'}</p>
-          <Link href={`/clubs/${groupId}/boards/${boardId}`} className="text-indigo-600 hover:underline mt-4 inline-block">
+          <Link href={`/clubs/${clubId}/boards/${boardId}`} className="text-indigo-600 hover:underline mt-4 inline-block">
             ← 목록으로
           </Link>
         </div>
@@ -235,7 +235,7 @@ export default function PostDetailPage() {
     <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <Link href={`/clubs/${groupId}/boards/${boardId}`} className="text-indigo-600 hover:underline">
+          <Link href={`/clubs/${clubId}/boards/${boardId}`} className="text-indigo-600 hover:underline">
             ← 목록으로
           </Link>
         </div>
@@ -295,7 +295,7 @@ export default function PostDetailPage() {
 
           {user && post.author && user.userId === post.author.userId && (
             <div className="flex gap-3 mt-8 pt-6 border-t border-slate-200">
-              <Link href={`/clubs/${groupId}/boards/${boardId}/posts/${postId}/edit`}>
+              <Link href={`/clubs/${clubId}/boards/${boardId}/posts/${postId}/edit`}>
                 <Button variant="secondary" className="gap-2">
                   <Edit className="w-4 h-4" />
                   수정
@@ -413,12 +413,12 @@ export default function PostDetailPage() {
 
         <div className="bg-white rounded-xl p-4 border border-slate-200">
           <div className="flex items-center justify-between">
-            <Link href={`/clubs/${groupId}/boards/${boardId}`}>
+            <Link href={`/clubs/${clubId}/boards/${boardId}`}>
               <button className="px-4 py-2 text-slate-700 hover:text-indigo-600 font-medium transition-colors">
                 ← 이전 글
               </button>
             </Link>
-            <Link href={`/clubs/${groupId}/boards/${boardId}`}>
+            <Link href={`/clubs/${clubId}/boards/${boardId}`}>
               <button className="px-4 py-2 text-slate-700 hover:text-indigo-600 font-medium transition-colors">
                 다음 글 →
               </button>

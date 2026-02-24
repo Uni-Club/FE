@@ -16,8 +16,8 @@ interface ApplicationDetail {
   applicationId: number;
   recruitmentId: number;
   recruitmentTitle: string;
-  groupId: number;
-  groupName: string;
+  clubId: number;
+  clubName: string;
   applicantId: number;
   applicantName: string;
   applicantEmail: string;
@@ -184,10 +184,10 @@ function ApplicationDetailContent() {
                 <div className="flex items-center gap-2 text-slate-500 text-sm">
                   <Building2 className="w-4 h-4" />
                   <Link
-                    href={`/clubs/${application.groupId}`}
+                    href={`/clubs/${application.clubId}`}
                     className="hover:text-indigo-600 hover:underline"
                   >
-                    {application.groupName}
+                    {application.clubName}
                   </Link>
                 </div>
               </div>

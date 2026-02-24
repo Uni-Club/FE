@@ -21,7 +21,7 @@ interface Schedule {
 
 function SchedulesContent() {
   const params = useParams();
-  const groupId = params.groupId as string;
+  const clubId = params.clubId as string;
   const { toast } = useToast();
   const confirm = useConfirm();
 
@@ -34,7 +34,7 @@ function SchedulesContent() {
   const fetchSchedules = async () => {
     try {
       setLoading(true);
-      const response = await scheduleApi.getByGroup(Number(groupId));
+      const response = await scheduleApi.getByClub(Number(clubId));
       if (response.success && response.data) {
         setSchedules(response.data);
       } else {
@@ -49,11 +49,11 @@ function SchedulesContent() {
 
   useEffect(() => {
     fetchSchedules();
-  }, [groupId]);
+  }, [clubId]);
 
   const handleCreate = async (data: any) => {
     try {
-      const response = await scheduleApi.create(Number(groupId), data);
+      const response = await scheduleApi.create(Number(clubId), data);
       if (response.success) {
         toast({ title: '일정이 생성되었습니다', variant: 'success' });
         await fetchSchedules();
@@ -69,7 +69,7 @@ function SchedulesContent() {
   const handleUpdate = async (data: any) => {
     if (!editingSchedule) return;
     try {
-      const response = await scheduleApi.update(Number(groupId), editingSchedule.scheduleId, data);
+      const response = await scheduleApi.update(Number(clubId), editingSchedule.scheduleId, data);
       if (response.success) {
         toast({ title: '일정이 수정되었습니다', variant: 'success' });
         await fetchSchedules();
@@ -93,7 +93,7 @@ function SchedulesContent() {
     if (!ok) return;
 
     try {
-      const response = await scheduleApi.delete(Number(groupId), id);
+      const response = await scheduleApi.delete(Number(clubId), id);
       if (response.success) {
         toast({ title: '일정이 삭제되었습니다', variant: 'success' });
         await fetchSchedules();
@@ -174,7 +174,7 @@ function SchedulesContent() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="bg-white rounded-2xl p-6 hover:shadow-soft-lg transition-all duration-300 border border-slate-200 hover:border-indigo-200 group"
+                className="bg-white rounded-2xl p-6 hover:shadow-soft-lg transition-all duration-300 border border-slate-200 hover:border-indigo-200 club"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
@@ -184,7 +184,7 @@ function SchedulesContent() {
                     <span className="px-3 py-1 bg-indigo-50 text-indigo-600 text-xs rounded-full font-semibold">
                       {new Date(schedule.startAt).toLocaleDateString('ko-KR', { month: 'short', day: 'numeric' })}
                     </span>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1 opacity-0 club-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => openEditModal(schedule)}
                         className="p-1 text-slate-400 hover:text-indigo-600"

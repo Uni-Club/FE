@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
-import { groupApi, schoolApi } from '@/lib/api';
+import { clubApi, schoolApi } from '@/lib/api';
 import ErrorMessage from '@/components/ErrorMessage';
 import AuthGuard from '@/components/AuthGuard';
 import { Button } from '@/components/ui/button';
@@ -15,7 +15,7 @@ function NewClubContent() {
   const [error, setError] = useState('');
   const [schools, setSchools] = useState<any[]>([]);
   const [formData, setFormData] = useState({
-    groupName: '',
+    clubName: '',
     description: '',
     schoolId: 0,
     isUnion: false,
@@ -43,11 +43,11 @@ function NewClubContent() {
     try {
       setSubmitting(true);
       setError('');
-      const response = await groupApi.create(formData);
+      const response = await clubApi.create(formData);
       if (response.success) {
         toast({ title: '동아리가 생성되었습니다!', variant: 'success' });
         const data: any = response.data;
-        router.push(`/clubs/${data.groupId}`);
+        router.push(`/clubs/${data.clubId}`);
       } else {
         setError(response.error?.message || '동아리 생성에 실패했습니다.');
         toast({ title: response.error?.message || '동아리 생성에 실패했습니다', variant: 'error' });
@@ -83,8 +83,8 @@ function NewClubContent() {
               <input
                 type="text"
                 required
-                value={formData.groupName}
-                onChange={(e) => setFormData({ ...formData, groupName: e.target.value })}
+                value={formData.clubName}
+                onChange={(e) => setFormData({ ...formData, clubName: e.target.value })}
                 placeholder="동아리 이름을 입력하세요"
                 className="w-full px-4 py-3 bg-white rounded-xl border border-slate-200 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 transition-all"
               />

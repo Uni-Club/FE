@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { groupApi } from '@/lib/api';
+import { clubApi } from '@/lib/api';
 import AuthGuard from '@/components/AuthGuard';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
@@ -14,23 +14,23 @@ function EditClubContent() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
-    groupName: '',
+    clubName: '',
     description: '',
   });
   const { toast } = useToast();
 
   useEffect(() => {
     loadClub();
-  }, [params.groupId]);
+  }, [params.clubId]);
 
   const loadClub = async () => {
     try {
       setLoading(true);
-      const response = await groupApi.getById(Number(params.groupId));
+      const response = await clubApi.getById(Number(params.clubId));
       if (response.success && response.data) {
         const clubData: any = response.data;
         setFormData({
-          groupName: clubData.groupName,
+          clubName: clubData.clubName,
           description: clubData.description || '',
         });
       }
@@ -46,10 +46,10 @@ function EditClubContent() {
     try {
       setSubmitting(true);
       setError('');
-      const response = await groupApi.update(Number(params.groupId), formData);
+      const response = await clubApi.update(Number(params.clubId), formData);
       if (response.success) {
         toast({ title: '동아리 정보가 수정되었습니다!', variant: 'success' });
-        router.push(`/clubs/${params.groupId}`);
+        router.push(`/clubs/${params.clubId}`);
       } else {
         setError(response.error?.message || '수정에 실패했습니다.');
         toast({ title: response.error?.message || '수정에 실패했습니다', variant: 'error' });
@@ -88,15 +88,15 @@ function EditClubContent() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* 동아리 이름 */}
             <div>
-              <label htmlFor="groupName" className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label htmlFor="clubName" className="block text-sm font-medium text-slate-700 mb-1.5">
                 동아리 이름 <span className="text-red-500">*</span>
               </label>
               <input
                 type="text"
-                id="groupName"
+                id="clubName"
                 required
-                value={formData.groupName}
-                onChange={(e) => setFormData({ ...formData, groupName: e.target.value })}
+                value={formData.clubName}
+                onChange={(e) => setFormData({ ...formData, clubName: e.target.value })}
                 className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-500 text-sm"
               />
             </div>

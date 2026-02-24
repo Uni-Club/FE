@@ -53,7 +53,7 @@ function NewRecruitmentContent() {
         : [];
 
       const response = await recruitmentApi.create({
-        groupId: Number(params.groupId),
+        clubId: Number(params.clubId),
         title: formData.title,
         content: formData.content,
         category: formData.category || undefined,

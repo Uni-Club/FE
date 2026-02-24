@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { Users, Trash2, UserPlus, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { groupApi } from '@/lib/api';
+import { clubApi } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import Loading from '@/components/Loading';
 import ErrorMessage from '@/components/ErrorMessage';
@@ -33,12 +33,12 @@ function ClubMembersContent() {
 
   useEffect(() => {
     loadMembers();
-  }, [params.groupId]);
+  }, [params.clubId]);
 
   const loadMembers = async () => {
     try {
       setLoading(true);
-      const response = await groupApi.getMembers(Number(params.groupId));
+      const response = await clubApi.getMembers(Number(params.clubId));
       if (response.success && Array.isArray(response.data)) {
         setMembers(response.data);
 
@@ -75,7 +75,7 @@ function ClubMembersContent() {
     if (!ok) return;
 
     try {
-      const response = await groupApi.removeMember(Number(params.groupId), userId);
+      const response = await clubApi.removeMember(Number(params.clubId), userId);
       if (response.success) {
         toast({ title: '멤버가 퇴출되었습니다', variant: 'success' });
         loadMembers();
@@ -103,7 +103,7 @@ function ClubMembersContent() {
         return;
       }
 
-      const response = await groupApi.addMember(Number(params.groupId), userId, addRole);
+      const response = await clubApi.addMember(Number(params.clubId), userId, addRole);
       if (response.success) {
         setAddSuccess('멤버가 추가되었습니다.');
         toast({ title: '멤버가 추가되었습니다', variant: 'success' });

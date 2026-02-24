@@ -12,7 +12,7 @@ import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useClub } from '@/hooks/useClubs';
 import { useAuth } from '@/contexts/AuthContext';
-import { groupApi, boardApi, postApi } from '@/lib/api';
+import { clubApi, boardApi, postApi } from '@/lib/api';
 import Loading from '@/components/Loading';
 import ErrorMessage from '@/components/ErrorMessage';
 import { Button } from '@/components/ui/button';
@@ -40,12 +40,13 @@ interface PostInfo {
 export default function ClubDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const groupId = params.groupId as string;
+  const raw = params?.clubId;
+  const clubId = Array.isArray(raw) ? raw[0] : raw; // ✅ 안전 처리
   const { isAuthenticated, user } = useAuth();
   const { toast } = useToast();
   const confirm = useConfirm();
 
-  const { data: club, isLoading, error } = useClub(groupId);
+  const { data: club, isLoading, error, isFetching } = useClub(clubId ?? '');
 
   const [memberInfo, setMemberInfo] = useState<{
     isMember: boolean;
@@ -69,11 +70,11 @@ export default function ClubDetailPage() {
 
   useEffect(() => {
     const loadData = async () => {
-      if (!groupId) return;
+      if (!clubId) return;
 
       // Load boards
       try {
-        const boardsResponse = await boardApi.getByGroup(Number(groupId));
+        const boardsResponse = await boardApi.getByClub(Number(clubId));
         if (boardsResponse.success && Array.isArray(boardsResponse.data)) {
           setBoards(boardsResponse.data);
         }
@@ -82,7 +83,7 @@ export default function ClubDetailPage() {
       // Check membership
       if (user && isAuthenticated) {
         try {
-          const response = await groupApi.getMembers(Number(groupId));
+          const response = await clubApi.getMembers(Number(clubId));
           if (response.success && Array.isArray(response.data)) {
             const currentMember = response.data.find(
               (m: any) => m.user?.userId === user.userId
@@ -102,7 +103,7 @@ export default function ClubDetailPage() {
     };
 
     loadData();
-  }, [groupId, user, isAuthenticated]);
+  }, [clubId, user, isAuthenticated]);
 
   // Load posts when boards are loaded and user is a member
   useEffect(() => {
@@ -148,7 +149,7 @@ export default function ClubDetailPage() {
       router.push('/auth/login');
       return;
     }
-    router.push(`/clubs/${groupId}/recruitments`);
+    router.push(`/clubs/${clubId}/recruitments`);
   };
 
   const handleDeleteClub = async () => {
@@ -162,7 +163,7 @@ export default function ClubDetailPage() {
 
     try {
       setDeleting(true);
-      const response = await groupApi.delete(Number(groupId));
+      const response = await clubApi.delete(Number(clubId));
       if (response.success) {
         toast({ title: '동아리가 삭제되었습니다', variant: 'success' });
         router.push('/clubs');
@@ -176,8 +177,13 @@ export default function ClubDetailPage() {
     }
   };
 
-  if (isLoading) return <Loading />;
+  // clubId 자체가 아직 없으면 로딩 처리 (NotFound 금지)
+  if (!clubId) return <Loading />;
+  
+  // 요청 중이면 로딩
+  if (isLoading || isFetching) return <Loading />;
 
+  // 요청 실패(혹은 진짜 없음)만 NotFound
   if (error || !club) {
     return (
       <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
@@ -218,7 +224,7 @@ export default function ClubDetailPage() {
             </div>
 
             <h1 className="font-bold text-4xl sm:text-5xl text-white mb-3">
-              {club.groupName}
+              {club.clubName}
             </h1>
 
             <p className="text-lg text-white/90 mb-6 max-w-3xl leading-relaxed">
@@ -321,7 +327,7 @@ export default function ClubDetailPage() {
                       <span className="text-sm text-slate-500">
                         {activeTab === 'notice' ? '공지사항' : '자유게시판'}
                       </span>
-                      <Link href={`/clubs/${groupId}/boards/${activeBoardId}/posts/new`}>
+                      <Link href={`/clubs/${clubId}/boards/${activeBoardId}/posts/new`}>
                         <Button size="sm" variant="secondary" className="gap-1.5 text-xs">
                           <PenSquare className="w-3.5 h-3.5" />
                           글쓰기
@@ -342,7 +348,7 @@ export default function ClubDetailPage() {
                       </p>
                       {memberInfo.isAdmin && (
                         <Link
-                          href={`/clubs/${groupId}/boards`}
+                          href={`/clubs/${clubId}/boards`}
                           className="text-xs text-indigo-600 hover:text-indigo-700"
                         >
                           게시판 관리에서 생성하기
@@ -354,7 +360,7 @@ export default function ClubDetailPage() {
                       <MessageSquare className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                       <p className="text-sm text-slate-500">작성된 글이 없습니다</p>
                       <Link
-                        href={`/clubs/${groupId}/boards/${activeBoardId}/posts/new`}
+                        href={`/clubs/${clubId}/boards/${activeBoardId}/posts/new`}
                         className="inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700 mt-2"
                       >
                         <PenSquare className="w-3.5 h-3.5" />
@@ -366,8 +372,8 @@ export default function ClubDetailPage() {
                       {activePosts.slice(0, 10).map((post) => (
                         <Link
                           key={post.postId}
-                          href={`/clubs/${groupId}/boards/${activeBoardId}/posts/${post.postId}`}
-                          className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50 transition-colors group"
+                          href={`/clubs/${clubId}/boards/${activeBoardId}/posts/${post.postId}`}
+                          className="flex items-center gap-3 px-5 py-3.5 hover:bg-slate-50 transition-colors club"
                         >
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-2 mb-0.5">
@@ -381,7 +387,7 @@ export default function ClubDetailPage() {
                                   공지
                                 </span>
                               )}
-                              <h4 className="text-sm font-medium text-slate-900 truncate group-hover:text-indigo-600 transition-colors">
+                              <h4 className="text-sm font-medium text-slate-900 truncate club-hover:text-indigo-600 transition-colors">
                                 {post.title}
                               </h4>
                             </div>
@@ -395,7 +401,7 @@ export default function ClubDetailPage() {
                               </span>
                             </div>
                           </div>
-                          <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-400 flex-shrink-0" />
+                          <ChevronRight className="w-4 h-4 text-slate-300 club-hover:text-indigo-400 flex-shrink-0" />
                         </Link>
                       ))}
                     </div>
@@ -405,7 +411,7 @@ export default function ClubDetailPage() {
                   {activeBoardId && activePosts.length > 10 && (
                     <div className="px-5 py-3 border-t border-slate-100 text-center">
                       <Link
-                        href={`/clubs/${groupId}/boards/${activeBoardId}`}
+                        href={`/clubs/${clubId}/boards/${activeBoardId}`}
                         className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
                       >
                         전체 글 보기 ({activePosts.length}개)
@@ -428,7 +434,7 @@ export default function ClubDetailPage() {
                   <h2 className="font-bold text-lg text-slate-900">진행 중인 모집</h2>
                 </div>
                 <Link
-                  href={`/clubs/${groupId}/recruitments`}
+                  href={`/clubs/${clubId}/recruitments`}
                   className="block border border-slate-200 rounded-xl p-5 hover:border-indigo-200 hover:shadow-sm transition-all"
                 >
                   <div className="flex items-center justify-between">
@@ -496,42 +502,42 @@ export default function ClubDetailPage() {
                 </h3>
                 <div className="space-y-1">
                   <Link
-                    href={`/clubs/${groupId}/recruitments/new`}
+                    href={`/clubs/${clubId}/recruitments/new`}
                     className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg transition-colors"
                   >
                     <Plus className="w-4 h-4" />
                     모집공고 작성
                   </Link>
                   <Link
-                    href={`/clubs/${groupId}/members`}
+                    href={`/clubs/${clubId}/members`}
                     className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg transition-colors"
                   >
                     <Users className="w-4 h-4" />
                     멤버 관리
                   </Link>
                   <Link
-                    href={`/clubs/${groupId}/applications`}
+                    href={`/clubs/${clubId}/applications`}
                     className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg transition-colors"
                   >
                     <ClipboardList className="w-4 h-4" />
                     가입 신청 관리
                   </Link>
                   <Link
-                    href={`/clubs/${groupId}/leave-requests`}
+                    href={`/clubs/${clubId}/leave-requests`}
                     className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
                     탈퇴 신청 관리
                   </Link>
                   <Link
-                    href={`/clubs/${groupId}/boards`}
+                    href={`/clubs/${clubId}/boards`}
                     className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg transition-colors"
                   >
                     <MessageSquare className="w-4 h-4" />
                     게시판 관리
                   </Link>
                   <Link
-                    href={`/clubs/${groupId}/edit`}
+                    href={`/clubs/${clubId}/edit`}
                     className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg transition-colors"
                   >
                     <Edit className="w-4 h-4" />
@@ -552,14 +558,14 @@ export default function ClubDetailPage() {
                 <h3 className="font-bold text-sm text-slate-900 mb-3">바로가기</h3>
                 <div className="space-y-1">
                   <Link
-                    href={`/clubs/${groupId}/schedules`}
+                    href={`/clubs/${clubId}/schedules`}
                     className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
                   >
                     <Calendar className="w-4 h-4" />
                     일정
                   </Link>
                   <Link
-                    href={`/clubs/${groupId}/recruitments`}
+                    href={`/clubs/${clubId}/recruitments`}
                     className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
                   >
                     <Megaphone className="w-4 h-4" />
@@ -578,7 +584,7 @@ export default function ClubDetailPage() {
                 className="bg-white rounded-2xl p-5 border border-slate-200"
               >
                 <Link
-                  href={`/clubs/${groupId}/schedules`}
+                  href={`/clubs/${clubId}/schedules`}
                   className="flex items-center gap-3 text-sm text-slate-700 hover:text-indigo-600 transition-colors"
                 >
                   <div className="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center">

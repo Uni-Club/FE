@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { MessageSquare, Pin, Loader2, PlusCircle, Trash2, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { boardApi, groupApi } from '@/lib/api';
+import { boardApi, clubApi } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
@@ -32,7 +32,7 @@ export default function BoardsPage() {
   const { user } = useAuth();
   const { toast } = useToast();
   const confirm = useConfirm();
-  const groupId = params.groupId as string;
+  const clubId = params.clubId as string;
 
   const [boards, setBoards] = useState<Board[]>([]);
   const [loading, setLoading] = useState(true);
@@ -45,7 +45,7 @@ export default function BoardsPage() {
   const [createForm, setCreateForm] = useState({
     name: '',
     boardType: 'FREE',
-    visibility: 'GROUP_ONLY' as 'PUBLIC' | 'GROUP_ONLY',
+    visibility: 'CLUB_ONLY' as 'PUBLIC' | 'CLUB_ONLY',
   });
   const [createError, setCreateError] = useState<string | null>(null);
 
@@ -53,7 +53,7 @@ export default function BoardsPage() {
     const fetchBoards = async () => {
       try {
         setLoading(true);
-        const response = await boardApi.getByGroup(Number(groupId));
+        const response = await boardApi.getByClub(Number(clubId));
         if (response.success && response.data) {
           setBoards(response.data);
         } else {
@@ -67,14 +67,14 @@ export default function BoardsPage() {
     };
 
     fetchBoards();
-  }, [groupId]);
+  }, [clubId]);
 
   // Check admin status
   useEffect(() => {
     const checkAdmin = async () => {
       if (!user) return;
       try {
-        const response = await groupApi.getMembers(Number(groupId));
+        const response = await clubApi.getMembers(Number(clubId));
         if (response.success && Array.isArray(response.data)) {
           const currentMember = response.data.find(
             (m: any) => m.user?.userId === user.userId
@@ -95,7 +95,7 @@ export default function BoardsPage() {
     };
 
     checkAdmin();
-  }, [groupId, user]);
+  }, [clubId, user]);
 
   const handleCreateBoard = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -104,19 +104,19 @@ export default function BoardsPage() {
     try {
       setCreating(true);
       setCreateError(null);
-      const response = await boardApi.create(Number(groupId), {
+      const response = await boardApi.create(Number(clubId), {
         name: createForm.name,
         boardType: createForm.boardType,
         visibility: createForm.visibility,
       });
       if (response.success) {
         // Refresh boards list
-        const refreshResponse = await boardApi.getByGroup(Number(groupId));
+        const refreshResponse = await boardApi.getByClub(Number(clubId));
         if (refreshResponse.success && refreshResponse.data) {
           setBoards(refreshResponse.data);
         }
         setShowCreateModal(false);
-        setCreateForm({ name: '', boardType: 'FREE', visibility: 'GROUP_ONLY' });
+        setCreateForm({ name: '', boardType: 'FREE', visibility: 'CLUB_ONLY' });
       } else {
         setCreateError(response.error?.message || '게시판 생성에 실패했습니다.');
       }
@@ -137,7 +137,7 @@ export default function BoardsPage() {
     if (!ok) return;
 
     try {
-      const response = await boardApi.delete(Number(groupId), boardId);
+      const response = await boardApi.delete(Number(clubId), boardId);
       if (response.success) {
         setBoards(boards.filter((b) => b.boardId !== boardId));
         toast({ title: '게시판이 삭제되었습니다.', variant: 'success' });
@@ -209,16 +209,16 @@ export default function BoardsPage() {
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 className="relative"
               >
-                <Link href={`/clubs/${groupId}/boards/${board.boardId}`}>
-                  <div className="group bg-white rounded-2xl p-6 hover:shadow-soft-lg transition-all duration-300 border border-slate-200 hover:border-indigo-200 h-full">
+                <Link href={`/clubs/${clubId}/boards/${board.boardId}`}>
+                  <div className="club bg-white rounded-2xl p-6 hover:shadow-soft-lg transition-all duration-300 border border-slate-200 hover:border-indigo-200 h-full">
                     <div className="flex items-start justify-between mb-4">
                       <div className="text-4xl">{boardIcons[board.boardType] || boardIcons.DEFAULT}</div>
-                      <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center group-hover:bg-gradient-to-br group-hover:from-indigo-500 group-hover:to-violet-500 group-hover:scale-110 transition-all">
-                        <MessageSquare className="w-5 h-5 text-indigo-600 group-hover:text-white transition-colors" />
+                      <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center club-hover:bg-gradient-to-br club-hover:from-indigo-500 club-hover:to-violet-500 club-hover:scale-110 transition-all">
+                        <MessageSquare className="w-5 h-5 text-indigo-600 club-hover:text-white transition-colors" />
                       </div>
                     </div>
 
-                    <h3 className="font-display font-bold text-2xl text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors">
+                    <h3 className="font-display font-bold text-2xl text-slate-900 mb-2 club-hover:text-indigo-600 transition-colors">
                       {board.name}
                     </h3>
                     <p className="text-slate-600 mb-4 text-sm">
@@ -325,12 +325,12 @@ export default function BoardsPage() {
                   onChange={(e) =>
                     setCreateForm({
                       ...createForm,
-                      visibility: e.target.value as 'PUBLIC' | 'GROUP_ONLY',
+                      visibility: e.target.value as 'PUBLIC' | 'CLUB_ONLY',
                     })
                   }
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600 text-sm bg-white"
                 >
-                  <option value="GROUP_ONLY">멤버만 (GROUP_ONLY)</option>
+                  <option value="CLUB_ONLY">멤버만 (CLUB_ONLY)</option>
                   <option value="PUBLIC">전체 공개 (PUBLIC)</option>
                 </select>
               </div>

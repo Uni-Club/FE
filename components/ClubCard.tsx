@@ -5,8 +5,8 @@ import { Users, MapPin, ChevronRight } from 'lucide-react';
 
 interface ClubCardProps {
   club: {
-    groupId: number;
-    groupName: string;
+    clubId: number;
+    clubName: string;
     description: string;
     schoolName?: string;
     school?: {
@@ -35,7 +35,7 @@ export default function ClubCard({ club }: ClubCardProps) {
   const categoryColor = categoryColors[club.category || ''] || 'bg-slate-100 text-slate-600';
 
   return (
-    <Link href={`/clubs/${club.groupId}`}>
+    <Link href={`/clubs/${club.clubId}`}>
       <div className="bg-white rounded-lg border border-slate-200 p-4 hover:border-indigo-300 hover:shadow-md transition-all">
         {/* 상단: 카테고리 + 모집중 뱃지 */}
         <div className="flex items-center justify-between mb-3">
@@ -53,7 +53,7 @@ export default function ClubCard({ club }: ClubCardProps) {
 
         {/* 동아리명 */}
         <h3 className="font-bold text-lg text-slate-900 mb-1 line-clamp-1">
-          {club.groupName}
+          {club.clubName}
         </h3>
 
         {/* 학교 */}

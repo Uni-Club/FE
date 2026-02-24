@@ -16,15 +16,15 @@ export interface School {
   campusName?: string;
   region?: string;
   domain?: string;
-  groupCount?: number;
+  clubCount?: number;
   userCount?: number;
   createdAt?: string;
 }
 
 // 동아리 타입
-export interface Group {
-  groupId: number;
-  groupName: string;
+export interface Club {
+  clubId: number;
+  clubName: string;
   description?: string;
   leader: {
     userId: number;
@@ -41,7 +41,7 @@ export interface Group {
 }
 
 // 동아리 멤버 타입
-export interface GroupMember {
+export interface ClubMember {
   memberId: number;
   user: User;
   role: string; // 회장, 부회장, 관리자, 부원
@@ -52,9 +52,9 @@ export interface GroupMember {
 // 탈퇴 신청 타입
 export interface LeaveRequest {
   requestId: number;
-  group: {
-    groupId: number;
-    groupName: string;
+  club: {
+    clubId: number;
+    clubName: string;
   };
   user: User;
   reason?: string;
@@ -68,7 +68,7 @@ export interface LeaveRequest {
 // 모집공고 타입
 export interface Recruitment {
   recruitmentId: number;
-  group: Group;
+  club: Club;
   school?: School;
   title: string;
   content?: string;
@@ -99,7 +99,7 @@ export interface CustomField {
 export interface Application {
   applicationId: number;
   recruitment: Recruitment;
-  group: Group;
+  club: Club;
   applicant: User;
   status: 'SUBMITTED' | 'UNDER_REVIEW' | 'ACCEPTED' | 'REJECTED' | 'CANCELLED';
   motivation?: string;
@@ -119,10 +119,10 @@ export interface FieldAnswer {
 // 게시판 타입
 export interface Board {
   boardId: number;
-  group: Group;
+  club: Club;
   name: string;
   boardType: 'NOTICE' | 'FREE' | 'QNA';
-  visibility: 'PUBLIC' | 'GROUP_ONLY';
+  visibility: 'PUBLIC' | 'CLUB_ONLY';
   postCount?: number;
   createdAt: string;
 }
@@ -131,7 +131,7 @@ export interface Board {
 export interface Post {
   postId: number;
   board: Board;
-  group: Group;
+  club: Club;
   author: User;
   title: string;
   content?: string;
@@ -147,7 +147,7 @@ export interface Post {
 // 일정 타입
 export interface Schedule {
   scheduleId: number;
-  group: Group;
+  club: Club;
   title: string;
   description?: string;
   date: string;
