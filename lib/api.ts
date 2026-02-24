@@ -197,7 +197,7 @@ export const userApi = {
     }),
 
   // 내가 속한 동아리 목록
-  getMyGroups: () => fetchApi('/users/me/groups'),
+  getMyClubs: () => fetchApi('/users/me/clubs'),
 
   // 내 지원 내역
   getMyApplications: (status?: string) =>
@@ -223,14 +223,14 @@ export const schoolApi = {
   getById: (schoolId: number) => fetchApi(`/schools/${schoolId}`),
 
   // 학교별 동아리 목록
-  getGroups: (schoolId: number, params?: { page?: number; size?: number; keyword?: string }) =>
+  getClubs: (schoolId: number, params?: { page?: number; size?: number; keyword?: string }) =>
     fetchApi<PageResponse<any>>(
-      `/schools/${schoolId}/groups` + buildQueryString(params || {})
+      `/schools/${schoolId}/clubs` + buildQueryString(params || {})
     ),
 };
 
 // 동아리 API
-export const groupApi = {
+export const clubApi = {
   // 동아리 검색
   search: (params: {
     keyword?: string;
@@ -238,86 +238,86 @@ export const groupApi = {
     isUnion?: boolean;
     page?: number;
     size?: number;
-  }) => fetchApi<PageResponse<any>>('/groups' + buildQueryString(params)),
+  }) => fetchApi<PageResponse<any>>('/clubs' + buildQueryString(params)),
 
   // 동아리 생성
   create: (data: {
-    groupName: string;
+    clubName: string;
     description: string;
     schoolId?: number;
     isUnion?: boolean;
   }) =>
-    fetchApi('/groups', {
+    fetchApi('/clubs', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
   // 동아리 상세 조회
-  getById: (groupId: number) => fetchApi(`/groups/${groupId}`),
+  getById: (clubId: number) => fetchApi(`/clubs/${clubId}`),
 
   // 동아리 수정
-  update: (groupId: number, data: { groupName?: string; description?: string }) =>
-    fetchApi(`/groups/${groupId}`, {
+  update: (clubId: number, data: { clubName?: string; description?: string }) =>
+    fetchApi(`/clubs/${clubId}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
 
   // 동아리 삭제
-  delete: (groupId: number) =>
-    fetchApi(`/groups/${groupId}`, {
+  delete: (clubId: number) =>
+    fetchApi(`/clubs/${clubId}`, {
       method: 'DELETE',
     }),
 
   // 동아리 멤버 목록
-  getMembers: (groupId: number, role?: string) =>
-    fetchApi(`/groups/${groupId}/members${role ? `?role=${role}` : ''}`),
+  getMembers: (clubId: number, role?: string) =>
+    fetchApi(`/clubs/${clubId}/members${role ? `?role=${role}` : ''}`),
 
   // 동아리 멤버 추가
-  addMember: (groupId: number, userId: number, role: string) =>
-    fetchApi(`/groups/${groupId}/members`, {
+  addMember: (clubId: number, userId: number, role: string) =>
+    fetchApi(`/clubs/${clubId}/members`, {
       method: 'POST',
       body: JSON.stringify({ userId, role }),
     }),
 
   // 동아리 멤버 강제 퇴출
-  removeMember: (groupId: number, userId: number) =>
-    fetchApi(`/groups/${groupId}/members/${userId}`, {
+  removeMember: (clubId: number, userId: number) =>
+    fetchApi(`/clubs/${clubId}/members/${userId}`, {
       method: 'DELETE',
     }),
 
   // 탈퇴 신청
-  requestLeave: (groupId: number, reason: string) =>
-    fetchApi(`/groups/${groupId}/leave`, {
+  requestLeave: (clubId: number, reason: string) =>
+    fetchApi(`/clubs/${clubId}/leave`, {
       method: 'POST',
       body: JSON.stringify({ reason }),
     }),
 
   // 탈퇴 신청 목록 조회 (관리자)
-  getLeaveRequests: (groupId: number, status?: string) =>
-    fetchApi(`/groups/${groupId}/leave-requests${status ? `?status=${status}` : ''}`),
+  getLeaveRequests: (clubId: number, status?: string) =>
+    fetchApi(`/clubs/${clubId}/leave-requests${status ? `?status=${status}` : ''}`),
 
   // 탈퇴 신청 승인
-  approveLeaveRequest: (groupId: number, requestId: number, reviewNote?: string) =>
-    fetchApi(`/groups/${groupId}/leave-requests/${requestId}`, {
+  approveLeaveRequest: (clubId: number, requestId: number, reviewNote?: string) =>
+    fetchApi(`/clubs/${clubId}/leave-requests/${requestId}`, {
       method: 'PATCH',
       body: JSON.stringify({ action: 'APPROVE', reviewNote }),
     }),
 
   // 탈퇴 신청 거절
-  rejectLeaveRequest: (groupId: number, requestId: number, reviewNote?: string) =>
-    fetchApi(`/groups/${groupId}/leave-requests/${requestId}`, {
+  rejectLeaveRequest: (clubId: number, requestId: number, reviewNote?: string) =>
+    fetchApi(`/clubs/${clubId}/leave-requests/${requestId}`, {
       method: 'PATCH',
       body: JSON.stringify({ action: 'REJECT', reviewNote }),
     }),
 
   // 모집공고 목록
-  getRecruitments: (groupId: number, status?: string) =>
-    fetchApi(`/groups/${groupId}/recruitments${status ? `?status=${status}` : ''}`),
+  getRecruitments: (clubId: number, status?: string) =>
+    fetchApi(`/clubs/${clubId}/recruitments${status ? `?status=${status}` : ''}`),
 
   // 지원서 목록 (관리자용)
-  getApplications: (groupId: number, params?: { status?: string; page?: number; size?: number }) =>
+  getApplications: (clubId: number, params?: { status?: string; page?: number; size?: number }) =>
     fetchApi<PageResponse<any>>(
-      `/groups/${groupId}/applications` + buildQueryString(params || {})
+      `/clubs/${clubId}/applications` + buildQueryString(params || {})
     ),
 };
 
@@ -393,22 +393,22 @@ export const applicationApi = {
 // 게시판 API
 export const boardApi = {
   // 게시판 목록 조회
-  getByGroup: (groupId: number) => fetchApi<any[]>(`/groups/${groupId}/boards`),
+  getByClub: (clubId: number) => fetchApi<any[]>(`/clubs/${clubId}/boards`),
 
   // 게시판 상세 조회
-  getById: (groupId: number, boardId: number) =>
-    fetchApi(`/groups/${groupId}/boards/${boardId}`),
+  getById: (clubId: number, boardId: number) =>
+    fetchApi(`/clubs/${clubId}/boards/${boardId}`),
 
   // 게시판 생성
-  create: (groupId: number, data: { name: string; boardType: string; visibility?: 'PUBLIC' | 'GROUP_ONLY' }) =>
-    fetchApi(`/groups/${groupId}/boards`, {
+  create: (clubId: number, data: { name: string; boardType: string; visibility?: 'PUBLIC' | 'CLUB_ONLY' }) =>
+    fetchApi(`/clubs/${clubId}/boards`, {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
   // 게시판 삭제
-  delete: (groupId: number, boardId: number) =>
-    fetchApi(`/groups/${groupId}/boards/${boardId}`, { method: 'DELETE' }),
+  delete: (clubId: number, boardId: number) =>
+    fetchApi(`/clubs/${clubId}/boards/${boardId}`, { method: 'DELETE' }),
 };
 
 // 게시글 API
@@ -470,30 +470,30 @@ export const commentApi = {
 // 일정 API
 export const scheduleApi = {
   // 일정 목록 조회
-  getByGroup: (groupId: number) =>
-    fetchApi<any[]>(`/groups/${groupId}/schedules`),
+  getByClub: (clubId: number) =>
+    fetchApi<any[]>(`/clubs/${clubId}/schedules`),
 
   // 일정 상세 조회
-  getById: (groupId: number, scheduleId: number) =>
-    fetchApi(`/groups/${groupId}/schedules/${scheduleId}`),
+  getById: (clubId: number, scheduleId: number) =>
+    fetchApi(`/clubs/${clubId}/schedules/${scheduleId}`),
 
   // 일정 생성
-  create: (groupId: number, data: { title: string; description?: string; startAt: string; endAt: string; location?: string }) =>
-    fetchApi(`/groups/${groupId}/schedules`, {
+  create: (clubId: number, data: { title: string; description?: string; startAt: string; endAt: string; location?: string }) =>
+    fetchApi(`/clubs/${clubId}/schedules`, {
       method: 'POST',
       body: JSON.stringify(data),
     }),
 
   // 일정 수정
-  update: (groupId: number, scheduleId: number, data: { title?: string; description?: string; startAt?: string; endAt?: string; location?: string }) =>
-    fetchApi(`/groups/${groupId}/schedules/${scheduleId}`, {
+  update: (clubId: number, scheduleId: number, data: { title?: string; description?: string; startAt?: string; endAt?: string; location?: string }) =>
+    fetchApi(`/clubs/${clubId}/schedules/${scheduleId}`, {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
 
   // 일정 삭제
-  delete: (groupId: number, scheduleId: number) =>
-    fetchApi(`/groups/${groupId}/schedules/${scheduleId}`, { method: 'DELETE' }),
+  delete: (clubId: number, scheduleId: number) =>
+    fetchApi(`/clubs/${clubId}/schedules/${scheduleId}`, { method: 'DELETE' }),
 };
 
 // 알림 API
@@ -519,7 +519,7 @@ export default {
   auth: authApi,
   user: userApi,
   school: schoolApi,
-  group: groupApi,
+  club: clubApi,
   recruitment: recruitmentApi,
   application: applicationApi,
   board: boardApi,

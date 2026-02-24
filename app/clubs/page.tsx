@@ -165,7 +165,7 @@ export default function ClubsPage() {
                 : 'space-y-3'
             }>
               {clubs.map((club: Club, index: number) => (
-                <ClubCard key={club.groupId} club={club} index={index} />
+                <ClubCard key={club.clubId} club={club} index={index} />
               ))}
             </div>
 

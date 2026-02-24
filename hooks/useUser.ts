@@ -1,17 +1,17 @@
 import { useQuery } from '@tanstack/react-query';
 import { userApi } from '@/lib/api';
 
-// Fetch user's joined groups
-export function useMyGroups() {
+// Fetch user's joined clubs
+export function useMyClubs() {
   return useQuery({
-    queryKey: ['myGroups'],
+    queryKey: ['myClubs'],
     queryFn: async () => {
-      const response = await userApi.getMyGroups();
+      const response = await userApi.getMyClubs();
 
       if (response.success && response.data) {
         return response.data as Array<{
-          groupId: number;
-          groupName: string;
+          clubId: number;
+          clubName: string;
           role: string;
           joinedAt: string;
         }>;
@@ -36,9 +36,9 @@ export function useMyApplications(status?: string) {
           recruitment: {
             recruitmentId: number;
             title: string;
-            group: {
-              groupId: number;
-              groupName: string;
+            club: {
+              clubId: number;
+              clubName: string;
             };
           };
           createdAt: string;

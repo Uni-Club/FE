@@ -66,7 +66,7 @@ frontend/
 
 - `/` - 랜딩 페이지 (Hero, Features, CTA)
 - `/clubs` - 동아리 탐색 및 검색
-- `/clubs/[groupId]` - 동아리 상세 페이지
+- `/clubs/[clubId]` - 동아리 상세 페이지
 - `/auth/login` - 로그인
 - `/auth/signup` - 회원가입
 

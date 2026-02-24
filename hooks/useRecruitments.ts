@@ -11,9 +11,9 @@ export interface Recruitment {
   capacity?: number;
   applicantCount?: number;
   views?: number;
-  group?: {
-    groupId: number;
-    groupName: string;
+  club?: {
+    clubId: number;
+    clubName: string;
     school?: {
       schoolId: number;
       schoolName: string;

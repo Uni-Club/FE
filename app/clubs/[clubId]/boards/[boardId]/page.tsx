@@ -27,7 +27,7 @@ interface Board {
 
 export default function BoardDetailPage() {
   const params = useParams();
-  const groupId = params.groupId as string;
+  const clubId = params.clubId as string;
   const boardId = params.boardId as string;
 
   const [posts, setPosts] = useState<Post[]>([]);
@@ -41,7 +41,7 @@ export default function BoardDetailPage() {
       try {
         setLoading(true);
         const [boardRes, postsRes] = await Promise.all([
-          boardApi.getById(Number(groupId), Number(boardId)),
+          boardApi.getById(Number(clubId), Number(boardId)),
           postApi.getByBoard(Number(boardId), { keyword: searchQuery }),
         ]);
 
@@ -60,7 +60,7 @@ export default function BoardDetailPage() {
     };
 
     fetchData();
-  }, [groupId, boardId, searchQuery]);
+  }, [clubId, boardId, searchQuery]);
 
   if (loading) {
     return (
@@ -86,7 +86,7 @@ export default function BoardDetailPage() {
     <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
       <div className="max-w-6xl mx-auto">
         <div className="mb-8">
-          <Link href={`/clubs/${groupId}/boards`} className="text-indigo-600 hover:underline mb-2 inline-block">
+          <Link href={`/clubs/${clubId}/boards`} className="text-indigo-600 hover:underline mb-2 inline-block">
             ← 게시판 목록
           </Link>
           <h1 className="font-display font-bold text-2xl sm:text-3xl mb-2 text-slate-900">
@@ -106,7 +106,7 @@ export default function BoardDetailPage() {
               className="w-full pl-12 pr-4 py-3 bg-white rounded-xl border border-slate-200 focus:border-indigo-600 focus:outline-none focus:ring-2 focus:ring-indigo-100 transition-all"
             />
           </div>
-          <Link href={`/clubs/${groupId}/boards/${boardId}/posts/new`}>
+          <Link href={`/clubs/${clubId}/boards/${boardId}/posts/new`}>
             <Button className="gap-2 h-auto py-3 px-6">
               <PlusCircle className="w-5 h-5" />
               글쓰기
@@ -122,8 +122,8 @@ export default function BoardDetailPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
             >
-              <Link href={`/clubs/${groupId}/boards/${boardId}/posts/${post.postId}`}>
-                <div className={`group bg-white rounded-xl p-5 hover:shadow-soft-lg transition-all duration-300 border ${
+              <Link href={`/clubs/${clubId}/boards/${boardId}/posts/${post.postId}`}>
+                <div className={`club bg-white rounded-xl p-5 hover:shadow-soft-lg transition-all duration-300 border ${
                   post.isPinned ? 'border-indigo-200 bg-indigo-50/50' : 'border-slate-200'
                 }`}>
                   <div className="flex items-start gap-4">
@@ -141,7 +141,7 @@ export default function BoardDetailPage() {
                           </span>
                         )}
                       </div>
-                      <h3 className="font-bold text-lg text-slate-900 group-hover:text-indigo-600 transition-colors mb-2">
+                      <h3 className="font-bold text-lg text-slate-900 club-hover:text-indigo-600 transition-colors mb-2">
                         {post.title}
                       </h3>
                       <p className="text-sm text-slate-600 line-clamp-1 mb-3">
@@ -178,7 +178,7 @@ export default function BoardDetailPage() {
             <p className="text-slate-600 mb-6">
               첫 게시글을 작성해보세요
             </p>
-            <Link href={`/clubs/${groupId}/boards/${boardId}/posts/new`}>
+            <Link href={`/clubs/${clubId}/boards/${boardId}/posts/new`}>
               <Button className="gap-2">
                 글쓰기
               </Button>

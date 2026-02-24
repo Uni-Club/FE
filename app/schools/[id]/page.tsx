@@ -25,7 +25,7 @@ export default function SchoolDetailPage() {
       setLoading(true);
       const [schoolResponse, clubsResponse] = await Promise.all([
         schoolApi.getById(Number(params.id)),
-        schoolApi.getGroups(Number(params.id)),
+        schoolApi.getClubs(Number(params.id)),
       ]);
 
       if (schoolResponse.success) setSchool(schoolResponse.data);
@@ -75,7 +75,7 @@ export default function SchoolDetailPage() {
               <div className="flex gap-6">
                 <div>
                   <p className="text-sm text-slate-500">동아리</p>
-                  <p className="font-bold text-2xl text-indigo-600">{school.groupCount || 0}</p>
+                  <p className="font-bold text-2xl text-indigo-600">{school.clubCount || 0}</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-500">사용자</p>
@@ -96,7 +96,7 @@ export default function SchoolDetailPage() {
         {clubs.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {clubs.map((club, index) => (
-              <ClubCard key={club.groupId} club={club} index={index} />
+              <ClubCard key={club.clubId} club={club} index={index} />
             ))}
           </div>
         ) : (

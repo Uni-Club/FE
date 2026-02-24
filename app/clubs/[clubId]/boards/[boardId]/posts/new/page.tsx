@@ -2,86 +2,53 @@
 
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
-import { Save, X, Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { Save, X } from 'lucide-react';
 import { postApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
 
-export default function EditPostPage() {
+export default function NewPostPage() {
   const params = useParams();
   const router = useRouter();
   const { toast } = useToast();
-  const groupId = params.groupId as string;
+  const clubId = params.clubId as string;
   const boardId = params.boardId as string;
-  const postId = params.postId as string;
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
-  const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchPost = async () => {
-      try {
-        const response = await postApi.getById(Number(boardId), Number(postId));
-        if (response.success && response.data) {
-          const post = response.data as any;
-          setTitle(post.title);
-          setContent(post.content);
-        } else {
-          setError('게시글을 불러올 수 없습니다.');
-        }
-      } catch (err) {
-        setError('게시글을 불러오는 중 오류가 발생했습니다.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPost();
-  }, [postId]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaving(true);
+    setLoading(true);
     setError(null);
 
     try {
-      const response = await postApi.update(Number(boardId), Number(postId), { title, content });
+      const response = await postApi.create(Number(boardId), { title, content });
       if (response.success) {
-        toast({ title: '게시글이 수정되었습니다!', variant: 'success' });
-        router.push(`/clubs/${groupId}/boards/${boardId}/posts/${postId}`);
+        toast({ title: '게시글이 작성되었습니다!', variant: 'success' });
+        router.push(`/clubs/${clubId}/boards/${boardId}`);
       } else {
-        setError(response.error?.message || '게시글 수정에 실패했습니다.');
+        setError(response.error?.message || '게시글 작성에 실패했습니다.');
       }
     } catch (err) {
-      setError('게시글 수정 중 오류가 발생했습니다.');
+      setError('게시글 작성 중 오류가 발생했습니다.');
     } finally {
-      setSaving(false);
+      setLoading(false);
     }
   };
-
-  if (loading) {
-    return (
-      <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
-        </div>
-      </main>
-    );
-  }
 
   return (
     <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
       <div className="max-w-2xl mx-auto">
         <div className="mb-8">
-          <Link href={`/clubs/${groupId}/boards/${boardId}/posts/${postId}`} className="text-indigo-600 hover:underline mb-2 inline-block">
-            ← 돌아가기
+          <Link href={`/clubs/${clubId}/boards/${boardId}`} className="text-indigo-600 hover:underline mb-2 inline-block">
+            ← 목록으로
           </Link>
           <h1 className="font-display font-bold text-2xl sm:text-3xl mb-2 text-slate-900">
-            게시글 수정
+            게시글 작성
           </h1>
         </div>
 
@@ -127,13 +94,13 @@ export default function EditPostPage() {
           <div className="flex gap-4 mt-8">
             <Button
               type="submit"
-              disabled={saving}
+              disabled={loading}
               className="flex-1 h-auto py-4 gap-2"
             >
               <Save className="w-5 h-5" />
-              {saving ? '저장 중...' : '수정 완료'}
+              {loading ? '작성 중...' : '작성 완료'}
             </Button>
-            <Link href={`/clubs/${groupId}/boards/${boardId}/posts/${postId}`} className="flex-1">
+            <Link href={`/clubs/${clubId}/boards/${boardId}`} className="flex-1">
               <Button
                 type="button"
                 variant="secondary"

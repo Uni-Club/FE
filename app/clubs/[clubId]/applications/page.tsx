@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { FileText, Check, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { groupApi, applicationApi } from '@/lib/api';
+import { clubApi, applicationApi } from '@/lib/api';
 import Loading from '@/components/Loading';
 import ErrorMessage from '@/components/ErrorMessage';
 import AuthGuard from '@/components/AuthGuard';
@@ -21,12 +21,12 @@ function ClubApplicationsContent() {
 
   useEffect(() => {
     loadApplications();
-  }, [params.groupId]);
+  }, [params.clubId]);
 
   const loadApplications = async () => {
     try {
       setLoading(true);
-      const response = await groupApi.getApplications(Number(params.groupId));
+      const response = await clubApi.getApplications(Number(params.clubId));
       if (response.success && response.data) {
         const data = response.data;
         setApplications(Array.isArray(data) ? data : (data as any).content || []);

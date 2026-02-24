@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { UserMinus, Check, X } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { groupApi } from '@/lib/api';
+import { clubApi } from '@/lib/api';
 import Loading from '@/components/Loading';
 import ErrorMessage from '@/components/ErrorMessage';
 import AuthGuard from '@/components/AuthGuard';
@@ -21,12 +21,12 @@ function LeaveRequestsContent() {
 
   useEffect(() => {
     loadRequests();
-  }, [params.groupId]);
+  }, [params.clubId]);
 
   const loadRequests = async () => {
     try {
       setLoading(true);
-      const response = await groupApi.getLeaveRequests(Number(params.groupId));
+      const response = await clubApi.getLeaveRequests(Number(params.clubId));
       if (response.success && Array.isArray(response.data)) {
         setRequests(response.data);
       }
@@ -40,8 +40,8 @@ function LeaveRequestsContent() {
   const handleApprove = async (requestId: number) => {
     const note = await promptFn({ title: '승인 사유 입력', placeholder: '승인 사유를 입력하세요 (선택사항)' });
     try {
-      const response = await groupApi.approveLeaveRequest(
-        Number(params.groupId),
+      const response = await clubApi.approveLeaveRequest(
+        Number(params.clubId),
         requestId,
         note || undefined
       );
@@ -61,8 +61,8 @@ function LeaveRequestsContent() {
     if (!note) return;
 
     try {
-      const response = await groupApi.rejectLeaveRequest(
-        Number(params.groupId),
+      const response = await clubApi.rejectLeaveRequest(
+        Number(params.clubId),
         requestId,
         note
       );

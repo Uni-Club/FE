@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { groupApi } from '@/lib/api';
+import { clubApi } from '@/lib/api';
 import Loading from '@/components/Loading';
 import ErrorMessage from '@/components/ErrorMessage';
 import { Button } from '@/components/ui/button';
@@ -26,7 +26,7 @@ interface Recruitment {
 export default function ClubRecruitmentsPage() {
   const params = useParams();
   const router = useRouter();
-  const groupId = params.groupId as string;
+  const clubId = params.clubId as string;
   const { isAuthenticated, user } = useAuth();
 
   const [recruitments, setRecruitments] = useState<Recruitment[]>([]);
@@ -41,8 +41,8 @@ export default function ClubRecruitmentsPage() {
         setLoading(true);
 
         const [recruitRes, clubRes] = await Promise.all([
-          groupApi.getRecruitments(Number(groupId)),
-          groupApi.getById(Number(groupId)),
+          clubApi.getRecruitments(Number(clubId)),
+          clubApi.getById(Number(clubId)),
         ]);
 
         if (recruitRes.success && recruitRes.data) {
@@ -51,13 +51,13 @@ export default function ClubRecruitmentsPage() {
         }
 
         if (clubRes.success && clubRes.data) {
-          setClubName((clubRes.data as any).groupName || '');
+          setClubName((clubRes.data as any).clubName || '');
         }
 
         // Check admin role
         if (user && isAuthenticated) {
           try {
-            const membersRes = await groupApi.getMembers(Number(groupId));
+            const membersRes = await clubApi.getMembers(Number(clubId));
             if (membersRes.success && Array.isArray(membersRes.data)) {
               const me = membersRes.data.find((m: any) => m.user?.userId === user.userId);
               if (me && ['회장', '부회장', '관리자', 'LEADER', 'VICE_LEADER', 'MANAGER'].includes(me.role)) {
@@ -74,7 +74,7 @@ export default function ClubRecruitmentsPage() {
     };
 
     loadData();
-  }, [groupId, user, isAuthenticated]);
+  }, [clubId, user, isAuthenticated]);
 
   if (loading) return <Loading />;
 
@@ -99,14 +99,14 @@ export default function ClubRecruitmentsPage() {
         transition={{ delay: index * 0.05 }}
       >
         <Link href={`/recruitments/${recruitment.recruitmentId}`}>
-          <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-indigo-200 hover:shadow-md transition-all group">
+          <div className="bg-white rounded-xl p-5 border border-slate-200 hover:border-indigo-200 hover:shadow-md transition-all club">
             <div className="flex items-center justify-between mb-3">
               <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${badge.cls}`}>
                 {badge.text}
               </span>
-              <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-400" />
+              <ChevronRight className="w-4 h-4 text-slate-300 club-hover:text-indigo-400" />
             </div>
-            <h3 className="font-bold text-lg text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors">
+            <h3 className="font-bold text-lg text-slate-900 mb-2 club-hover:text-indigo-600 transition-colors">
               {recruitment.title}
             </h3>
             <div className="flex items-center gap-4 text-sm text-slate-500">
@@ -142,7 +142,7 @@ export default function ClubRecruitmentsPage() {
         <div className="flex items-center justify-between mb-6">
           <div>
             <button
-              onClick={() => router.push(`/clubs/${groupId}`)}
+              onClick={() => router.push(`/clubs/${clubId}`)}
               className="flex items-center gap-1 text-sm text-slate-500 hover:text-indigo-600 mb-2 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -152,7 +152,7 @@ export default function ClubRecruitmentsPage() {
           </div>
           {isAdmin && (
             <Button asChild>
-              <Link href={`/clubs/${groupId}/recruitments/new`}>
+              <Link href={`/clubs/${clubId}/recruitments/new`}>
                 <Plus className="w-4 h-4" />
                 모집공고 작성
               </Link>
@@ -200,7 +200,7 @@ export default function ClubRecruitmentsPage() {
             </p>
             {isAdmin && (
               <Button asChild size="sm">
-                <Link href={`/clubs/${groupId}/recruitments/new`}>
+                <Link href={`/clubs/${clubId}/recruitments/new`}>
                   <Plus className="w-4 h-4" />
                   첫 모집공고 작성하기
                 </Link>

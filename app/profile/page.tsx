@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 
 function ProfileContent() {
   const [user, setUser] = useState<any>(null);
-  const [myGroups, setMyGroups] = useState<any[]>([]);
+  const [myClubs, setMyClubs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'info' | 'clubs'>('info');
@@ -24,13 +24,13 @@ function ProfileContent() {
   const loadProfile = async () => {
     try {
       setLoading(true);
-      const [userResponse, groupsResponse] = await Promise.all([
+      const [userResponse, clubsResponse] = await Promise.all([
         userApi.getMe(),
-        userApi.getMyGroups(),
+        userApi.getMyClubs(),
       ]);
 
       if (userResponse.success) setUser(userResponse.data);
-      if (groupsResponse.success) setMyGroups(Array.isArray(groupsResponse.data) ? groupsResponse.data : []);
+      if (clubsResponse.success) setMyClubs(Array.isArray(clubsResponse.data) ? clubsResponse.data : []);
     } catch (err) {
       setError('프로필을 불러오는데 실패했습니다.');
     } finally {
@@ -72,7 +72,7 @@ function ProfileContent() {
                 : 'border-transparent text-slate-500 hover:text-slate-900'
             }`}
           >
-            내 동아리 ({myGroups.length})
+            내 동아리 ({myClubs.length})
           </button>
         </div>
 
@@ -155,18 +155,18 @@ function ProfileContent() {
 
           {activeTab === 'clubs' && (
             <div className="grid md:grid-cols-2 gap-6">
-              {myGroups.map((group: any) => (
-                <Link key={group.groupId} href={`/clubs/${group.groupId}`}>
+              {myClubs.map((club: any) => (
+                <Link key={club.clubId} href={`/clubs/${club.clubId}`}>
                   <div className="bg-white rounded-2xl p-6 hover:shadow-lg transition-all border border-slate-200">
-                    <h3 className="font-bold text-xl text-slate-900 mb-2">{group.groupName}</h3>
-                    <p className="text-sm text-slate-500 mb-4">{group.role}</p>
+                    <h3 className="font-bold text-xl text-slate-900 mb-2">{club.clubName}</h3>
+                    <p className="text-sm text-slate-500 mb-4">{club.role}</p>
                     <div className="text-xs text-slate-400">
-                      가입일: {new Date(group.joinedAt).toLocaleDateString()}
+                      가입일: {new Date(club.joinedAt).toLocaleDateString()}
                     </div>
                   </div>
                 </Link>
               ))}
-              {myGroups.length === 0 && (
+              {myClubs.length === 0 && (
                 <div className="col-span-2 text-center py-12 text-slate-500">
                   가입한 동아리가 없습니다.
                 </div>

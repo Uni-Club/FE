@@ -1,9 +1,9 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { groupApi, PageResponse } from '@/lib/api';
+import { clubApi, PageResponse } from '@/lib/api';
 
 export interface Club {
-  groupId: number;
-  groupName: string;
+  clubId: number;
+  clubName: string;
   description: string;
   category?: string;
   memberCount?: number;
@@ -32,7 +32,7 @@ export function useClubs(params: ClubSearchParams = {}) {
   return useQuery({
     queryKey: ['clubs', params],
     queryFn: async () => {
-      const response = await groupApi.search({
+      const response = await clubApi.search({
         keyword: params.keyword || undefined,
         schoolId: params.schoolId,
         isUnion: params.isUnion,
@@ -41,7 +41,7 @@ export function useClubs(params: ClubSearchParams = {}) {
       });
 
       if (response.success && response.data) {
-        // API returns List<GroupResponseDto> directly, not PageResponse
+        // API returns List<ClubResponseDto> directly, not PageResponse
         let clubs: Club[] = Array.isArray(response.data)
           ? response.data
           : (response.data as PageResponse<Club>).content || [];
@@ -90,11 +90,11 @@ export function useClubs(params: ClubSearchParams = {}) {
 }
 
 // Fetch single club detail
-export function useClub(groupId: number | string) {
+export function useClub(clubId: number | string) {
   return useQuery({
-    queryKey: ['club', groupId],
+    queryKey: ['club', clubId],
     queryFn: async () => {
-      const response = await groupApi.getById(Number(groupId));
+      const response = await clubApi.getById(Number(clubId));
 
       if (response.success && response.data) {
         return response.data as Club;
@@ -102,16 +102,16 @@ export function useClub(groupId: number | string) {
 
       throw new Error(response.error?.message || '동아리 정보를 불러오는데 실패했습니다.');
     },
-    enabled: !!groupId,
+    enabled: !!clubId,
   });
 }
 
 // Fetch club members
-export function useClubMembers(groupId: number | string, role?: string) {
+export function useClubMembers(clubId: number | string, role?: string) {
   return useQuery({
-    queryKey: ['club', groupId, 'members', role],
+    queryKey: ['club', clubId, 'members', role],
     queryFn: async () => {
-      const response = await groupApi.getMembers(Number(groupId), role);
+      const response = await clubApi.getMembers(Number(clubId), role);
 
       if (response.success && response.data) {
         return response.data as Array<{
@@ -124,7 +124,7 @@ export function useClubMembers(groupId: number | string, role?: string) {
 
       return [];
     },
-    enabled: !!groupId,
+    enabled: !!clubId,
   });
 }
 
@@ -133,8 +133,8 @@ export function useLeaveClub() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ groupId, reason }: { groupId: number; reason: string }) => {
-      const response = await groupApi.requestLeave(groupId, reason);
+    mutationFn: async ({ clubId, reason }: { clubId: number; reason: string }) => {
+      const response = await clubApi.requestLeave(clubId, reason);
 
       if (!response.success) {
         throw new Error(response.error?.message || '탈퇴 신청에 실패했습니다.');
@@ -142,9 +142,9 @@ export function useLeaveClub() {
 
       return response.data;
     },
-    onSuccess: (_, { groupId }) => {
-      queryClient.invalidateQueries({ queryKey: ['club', groupId] });
-      queryClient.invalidateQueries({ queryKey: ['myGroups'] });
+    onSuccess: (_, { clubId }) => {
+      queryClient.invalidateQueries({ queryKey: ['club', clubId] });
+      queryClient.invalidateQueries({ queryKey: ['myClubs'] });
     },
   });
 }

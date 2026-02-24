@@ -87,14 +87,14 @@ export default function SchoolsPage() {
               transition={{ duration: 0.4, delay: index * 0.05 }}
             >
               <Link href={`/schools/${school.schoolId}`}>
-                <div className="group bg-white rounded-2xl p-6 hover:shadow-lg transition-all duration-300 border border-slate-200 hover:border-indigo-200">
+                <div className="club bg-white rounded-2xl p-6 hover:shadow-lg transition-all duration-300 border border-slate-200 hover:border-indigo-200">
                   <div className="flex items-start justify-between mb-4">
                     <div className="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center">
                       <Building className="w-6 h-6 text-indigo-600" />
                     </div>
                   </div>
 
-                  <h3 className="font-bold text-2xl text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors">
+                  <h3 className="font-bold text-2xl text-slate-900 mb-2 club-hover:text-indigo-600 transition-colors">
                     {school.schoolName}
                   </h3>
 
@@ -111,7 +111,7 @@ export default function SchoolsPage() {
                     </div>
                     <div className="flex items-center gap-1">
                       <Users className="w-4 h-4" />
-                      <span>{school.groupCount || 0}개 동아리</span>
+                      <span>{school.clubCount || 0}개 동아리</span>
                     </div>
                   </div>
                 </div>
