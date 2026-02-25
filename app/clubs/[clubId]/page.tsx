@@ -5,7 +5,7 @@ import {
   Users, MapPin, Calendar, MessageSquare, ArrowRight,
   Trash2, Settings, FileText, UserPlus, LogOut, Edit,
   Plus, ChevronRight, ClipboardList, Megaphone, Pin,
-  User, PenSquare,
+  User, PenSquare, Bell, HelpCircle,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -56,17 +56,14 @@ export default function ClubDetailPage() {
   }>({ isMember: false, isLeader: false, isAdmin: false, role: null });
 
   const [boards, setBoards] = useState<BoardInfo[]>([]);
-  const [activeTab, setActiveTab] = useState<'notice' | 'free'>('notice');
-  const [noticePosts, setNoticePosts] = useState<PostInfo[]>([]);
-  const [freePosts, setFreePosts] = useState<PostInfo[]>([]);
+  const [activeBoardId, setActiveBoardId] = useState<number | null>(null);
+  const [boardPosts, setBoardPosts] = useState<Record<number, PostInfo[]>>({});
   const [postsLoading, setPostsLoading] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [pendingApplicationsCount, setPendingApplicationsCount] = useState(0);
 
-  // Find boards by type
-  const noticeBoard = boards.find((b) => b.boardType === 'NOTICE');
-  const freeBoard = boards.find((b) => b.boardType === 'FREE');
-  const activeBoardId = activeTab === 'notice' ? noticeBoard?.boardId : freeBoard?.boardId;
-  const activePosts = activeTab === 'notice' ? noticePosts : freePosts;
+  const activeBoard = boards.find((b) => b.boardId === activeBoardId);
+  const activePosts = activeBoardId ? (boardPosts[activeBoardId] || []) : [];
 
   useEffect(() => {
     const loadData = async () => {
@@ -86,16 +83,29 @@ export default function ClubDetailPage() {
           const response = await clubApi.getMembers(Number(clubId));
           if (response.success && Array.isArray(response.data)) {
             const currentMember = response.data.find(
-              (m: any) => m.user?.userId === user.userId
+              (m: any) => m.userId === user.userId
             );
             if (currentMember) {
               const role = currentMember.role;
+              const isAdmin = ['회장', '부회장', '관리자', 'LEADER', 'VICE_LEADER', 'MANAGER'].includes(role);
               setMemberInfo({
                 isMember: true,
                 isLeader: role === '회장' || role === 'LEADER',
-                isAdmin: ['회장', '부회장', '관리자', 'LEADER', 'VICE_LEADER', 'MANAGER'].includes(role),
+                isAdmin,
                 role,
               });
+
+              // Fetch pending applications count for admins
+              if (isAdmin) {
+                try {
+                  const appsResponse = await clubApi.getApplications(Number(clubId), { status: 'SUBMITTED' });
+                  if (appsResponse.success && appsResponse.data) {
+                    const data = appsResponse.data as any;
+                    const count = data.totalElements ?? (Array.isArray(data) ? data.length : (data.content?.length ?? 0));
+                    setPendingApplicationsCount(count);
+                  }
+                } catch {}
+              }
             }
           }
         } catch {}
@@ -105,44 +115,32 @@ export default function ClubDetailPage() {
     loadData();
   }, [clubId, user, isAuthenticated]);
 
-  // Load posts when boards are loaded and user is a member
+  // Set default active board when boards load
+  useEffect(() => {
+    if (boards.length > 0 && activeBoardId === null) {
+      setActiveBoardId(boards[0].boardId);
+    }
+  }, [boards]);
+
+  // Load posts for active board
   useEffect(() => {
     const loadPosts = async () => {
-      if (!memberInfo.isMember || boards.length === 0) return;
+      if (!memberInfo.isMember || !activeBoardId) return;
+      if (boardPosts[activeBoardId]) return;
 
       setPostsLoading(true);
       try {
-        const promises: Promise<void>[] = [];
-
-        if (noticeBoard) {
-          promises.push(
-            postApi.getByBoard(noticeBoard.boardId).then((res) => {
-              if (res.success && res.data) {
-                const posts = Array.isArray(res.data) ? res.data : (res.data as any).content || [];
-                setNoticePosts(posts);
-              }
-            })
-          );
+        const res = await postApi.getByBoard(activeBoardId);
+        if (res.success && res.data) {
+          const posts = Array.isArray(res.data) ? res.data : (res.data as any).content || [];
+          setBoardPosts(prev => ({ ...prev, [activeBoardId]: posts }));
         }
-
-        if (freeBoard) {
-          promises.push(
-            postApi.getByBoard(freeBoard.boardId).then((res) => {
-              if (res.success && res.data) {
-                const posts = Array.isArray(res.data) ? res.data : (res.data as any).content || [];
-                setFreePosts(posts);
-              }
-            })
-          );
-        }
-
-        await Promise.all(promises);
       } catch {}
       setPostsLoading(false);
     };
 
     loadPosts();
-  }, [boards, memberInfo.isMember]);
+  }, [activeBoardId, memberInfo.isMember]);
 
   const handleApply = () => {
     if (!isAuthenticated) {
@@ -281,42 +279,31 @@ export default function ClubDetailPage() {
               >
                 {/* Tabs */}
                 <div className="flex items-center gap-1 bg-white rounded-t-2xl border border-b-0 border-slate-200 p-1.5">
-                  <button
-                    onClick={() => setActiveTab('notice')}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      activeTab === 'notice'
-                        ? 'bg-indigo-600 text-white shadow-sm'
-                        : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
-                    }`}
-                  >
-                    <Megaphone className="w-4 h-4" />
-                    공지사항
-                    {noticeBoard && (
+                  {boards.map((board) => (
+                    <button
+                      key={board.boardId}
+                      onClick={() => setActiveBoardId(board.boardId)}
+                      className={`flex-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                        activeBoardId === board.boardId
+                          ? 'bg-indigo-600 text-white shadow-sm'
+                          : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+                      }`}
+                    >
+                      {board.boardType === 'NOTICE' ? (
+                        <Megaphone className="w-4 h-4" />
+                      ) : board.boardType === 'QNA' ? (
+                        <HelpCircle className="w-4 h-4" />
+                      ) : (
+                        <MessageSquare className="w-4 h-4" />
+                      )}
+                      {board.name}
                       <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                        activeTab === 'notice' ? 'bg-white/20' : 'bg-slate-100'
+                        activeBoardId === board.boardId ? 'bg-white/20' : 'bg-slate-100'
                       }`}>
-                        {noticeBoard.postCount}
+                        {board.postCount}
                       </span>
-                    )}
-                  </button>
-                  <button
-                    onClick={() => setActiveTab('free')}
-                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      activeTab === 'free'
-                        ? 'bg-indigo-600 text-white shadow-sm'
-                        : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
-                    }`}
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    자유게시판
-                    {freeBoard && (
-                      <span className={`text-xs px-1.5 py-0.5 rounded-full ${
-                        activeTab === 'free' ? 'bg-white/20' : 'bg-slate-100'
-                      }`}>
-                        {freeBoard.postCount}
-                      </span>
-                    )}
-                  </button>
+                    </button>
+                  ))}
                 </div>
 
                 {/* Posts List */}
@@ -325,7 +312,7 @@ export default function ClubDetailPage() {
                   {activeBoardId && (
                     <div className="px-5 py-3 border-b border-slate-100 flex items-center justify-between">
                       <span className="text-sm text-slate-500">
-                        {activeTab === 'notice' ? '공지사항' : '자유게시판'}
+                        {activeBoard?.name || '게시판'}
                       </span>
                       <Link href={`/clubs/${clubId}/boards/${activeBoardId}/posts/new`}>
                         <Button size="sm" variant="secondary" className="gap-1.5 text-xs">
@@ -344,7 +331,7 @@ export default function ClubDetailPage() {
                     <div className="py-12 text-center">
                       <FileText className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                       <p className="text-sm text-slate-500 mb-1">
-                        {activeTab === 'notice' ? '공지사항' : '자유게시판'} 게시판이 아직 없습니다
+                        게시판이 아직 없습니다
                       </p>
                       {memberInfo.isAdmin && (
                         <Link
@@ -369,7 +356,7 @@ export default function ClubDetailPage() {
                     </div>
                   ) : (
                     <div className="divide-y divide-slate-100">
-                      {activePosts.slice(0, 10).map((post) => (
+                      {activePosts.slice(0, 5).map((post) => (
                         <Link
                           key={post.postId}
                           href={`/clubs/${clubId}/boards/${activeBoardId}/posts/${post.postId}`}
@@ -408,22 +395,52 @@ export default function ClubDetailPage() {
                   )}
 
                   {/* View all link */}
-                  {activeBoardId && activePosts.length > 10 && (
-                    <div className="px-5 py-3 border-t border-slate-100 text-center">
-                      <Link
-                        href={`/clubs/${clubId}/boards/${activeBoardId}`}
-                        className="text-sm text-indigo-600 hover:text-indigo-700 font-medium"
-                      >
-                        전체 글 보기 ({activePosts.length}개)
-                      </Link>
-                    </div>
-                  )}
+                  <div className="px-5 py-3 border-t border-slate-100 text-center">
+                    <Link
+                      href={`/clubs/${clubId}/boards`}
+                      className="text-sm text-indigo-600 hover:text-indigo-700 font-medium inline-flex items-center gap-1"
+                    >
+                      전체 글 보기
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </div>
                 </div>
               </motion.section>
             )}
 
-            {/* Active Recruitments */}
-            {(club.activeRecruitmentCount ?? 0) > 0 && (
+            {/* Pending Applications Alert - Admin/Leader only */}
+            {memberInfo.isAdmin && pendingApplicationsCount > 0 && (
+              <motion.section
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.15 }}
+                className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-6 border border-amber-200"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <Bell className="w-6 h-6 text-amber-600" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-amber-900 mb-0.5">
+                      새로운 가입 신청 {pendingApplicationsCount}건
+                    </h3>
+                    <p className="text-sm text-amber-700">
+                      확인되지 않은 가입 신청이 있습니다. 검토해 주세요.
+                    </p>
+                  </div>
+                  <Link
+                    href={`/clubs/${clubId}/applications`}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-amber-500 text-white rounded-xl font-semibold hover:bg-amber-600 transition-all flex-shrink-0 text-sm"
+                  >
+                    확인하기
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </motion.section>
+            )}
+
+            {/* Active Recruitments - non-members only */}
+            {!memberInfo.isMember && (club.activeRecruitmentCount ?? 0) > 0 && (
               <motion.section
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -565,11 +582,11 @@ export default function ClubDetailPage() {
                     일정
                   </Link>
                   <Link
-                    href={`/clubs/${clubId}/recruitments`}
+                    href={`/clubs/${clubId}/boards`}
                     className="flex items-center gap-3 px-3 py-2.5 text-sm text-slate-700 hover:bg-slate-50 rounded-lg transition-colors"
                   >
-                    <Megaphone className="w-4 h-4" />
-                    모집공고
+                    <MessageSquare className="w-4 h-4" />
+                    게시판
                   </Link>
                 </div>
               </motion.section>
