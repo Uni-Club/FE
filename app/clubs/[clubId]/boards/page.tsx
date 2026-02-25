@@ -3,9 +3,12 @@
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
-import { MessageSquare, Pin, Loader2, PlusCircle, Trash2, X } from 'lucide-react';
+import {
+  MessageSquare, Pin, Loader2, PlusCircle, Trash2, X,
+  Megaphone, HelpCircle, ChevronRight, PenSquare, User, ArrowLeft,
+} from 'lucide-react';
 import { motion } from 'framer-motion';
-import { boardApi, clubApi } from '@/lib/api';
+import { boardApi, postApi, clubApi } from '@/lib/api';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
@@ -14,17 +17,25 @@ import { useConfirm } from '@/components/ui/confirm-dialog';
 interface Board {
   boardId: number;
   name: string;
-  description: string;
-  postCount: number;
   boardType: string;
+  postCount: number;
 }
 
-const boardIcons: Record<string, string> = {
-  NOTICE: '📢',
-  FREE: '💬',
-  QNA: '❓',
-  GALLERY: '🖼️',
-  DEFAULT: '📋',
+interface PostInfo {
+  postId: number;
+  boardId: number;
+  title: string;
+  authorName: string;
+  content: string;
+  isNotice: boolean;
+  isPinned: boolean;
+  createdAt: string;
+}
+
+const boardTypeIcon: Record<string, React.ReactNode> = {
+  NOTICE: <Megaphone className="w-4 h-4" />,
+  FREE: <MessageSquare className="w-4 h-4" />,
+  QNA: <HelpCircle className="w-4 h-4" />,
 };
 
 export default function BoardsPage() {
@@ -35,9 +46,13 @@ export default function BoardsPage() {
   const clubId = params.clubId as string;
 
   const [boards, setBoards] = useState<Board[]>([]);
+  const [activeBoard, setActiveBoard] = useState<Board | null>(null);
+  const [posts, setPosts] = useState<PostInfo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [postsLoading, setPostsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [clubName, setClubName] = useState('');
 
   // Create board modal state
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -49,53 +64,70 @@ export default function BoardsPage() {
   });
   const [createError, setCreateError] = useState<string | null>(null);
 
+  // Load boards & check admin
   useEffect(() => {
-    const fetchBoards = async () => {
+    const init = async () => {
       try {
         setLoading(true);
-        const response = await boardApi.getByClub(Number(clubId));
-        if (response.success && response.data) {
-          setBoards(response.data);
+
+        // Fetch boards and club info in parallel
+        const [boardsRes, clubRes] = await Promise.all([
+          boardApi.getByClub(Number(clubId)),
+          clubApi.getById(Number(clubId)),
+        ]);
+
+        if (boardsRes.success && boardsRes.data) {
+          const boardList = boardsRes.data as Board[];
+          setBoards(boardList);
+          if (boardList.length > 0) {
+            setActiveBoard(boardList[0]);
+          }
         } else {
-          setError(response.error?.message || '게시판을 불러올 수 없습니다.');
+          setError(boardsRes.error?.message || '게시판을 불러올 수 없습니다.');
         }
-      } catch (err) {
-        setError('게시판을 불러오는 중 오류가 발생했습니다.');
+
+        if (clubRes.success && clubRes.data) {
+          setClubName((clubRes.data as any).clubName || '');
+        }
+
+        // Check admin
+        if (user) {
+          const membersRes = await clubApi.getMembers(Number(clubId));
+          if (membersRes.success && Array.isArray(membersRes.data)) {
+            const me = membersRes.data.find((m: any) => m.userId === user.userId);
+            if (me && ['회장', '부회장', '관리자', 'LEADER', 'VICE_LEADER', 'MANAGER'].includes(me.role)) {
+              setIsAdmin(true);
+            }
+          }
+        }
+      } catch {
+        setError('데이터를 불러오는 중 오류가 발생했습니다.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchBoards();
-  }, [clubId]);
+    init();
+  }, [clubId, user]);
 
-  // Check admin status
+  // Load posts when active board changes
   useEffect(() => {
-    const checkAdmin = async () => {
-      if (!user) return;
+    if (!activeBoard) return;
+
+    const loadPosts = async () => {
+      setPostsLoading(true);
       try {
-        const response = await clubApi.getMembers(Number(clubId));
-        if (response.success && Array.isArray(response.data)) {
-          const currentMember = response.data.find(
-            (m: any) => m.user?.userId === user.userId
-          );
-          if (
-            currentMember &&
-            (currentMember.role === '회장' ||
-              currentMember.role === '부회장' ||
-              currentMember.role === 'ADMIN' ||
-              currentMember.role === 'LEADER')
-          ) {
-            setIsAdmin(true);
-          }
+        const res = await postApi.getByBoard(activeBoard.boardId);
+        if (res.success && res.data) {
+          const data = res.data as any;
+          setPosts(Array.isArray(data) ? data : data.content || []);
         }
-      } catch (err) {
-        // Silent fail for admin check
-      }
+      } catch {}
+      setPostsLoading(false);
     };
 
-    checkAdmin();
-  }, [clubId, user]);
+    loadPosts();
+  }, [activeBoard]);
 
   const handleCreateBoard = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -110,26 +142,30 @@ export default function BoardsPage() {
         visibility: createForm.visibility,
       });
       if (response.success) {
-        // Refresh boards list
-        const refreshResponse = await boardApi.getByClub(Number(clubId));
-        if (refreshResponse.success && refreshResponse.data) {
-          setBoards(refreshResponse.data);
+        const refreshRes = await boardApi.getByClub(Number(clubId));
+        if (refreshRes.success && refreshRes.data) {
+          const boardList = refreshRes.data as Board[];
+          setBoards(boardList);
+          // Switch to newly created board
+          const newBoard = boardList[boardList.length - 1];
+          if (newBoard) setActiveBoard(newBoard);
         }
         setShowCreateModal(false);
         setCreateForm({ name: '', boardType: 'FREE', visibility: 'CLUB_ONLY' });
+        toast({ title: '게시판이 생성되었습니다.', variant: 'success' });
       } else {
         setCreateError(response.error?.message || '게시판 생성에 실패했습니다.');
       }
-    } catch (err) {
+    } catch {
       setCreateError('게시판 생성 중 오류가 발생했습니다.');
     } finally {
       setCreating(false);
     }
   };
 
-  const handleDeleteBoard = async (boardId: number, boardName: string) => {
+  const handleDeleteBoard = async (board: Board) => {
     const ok = await confirm({
-      title: `"${boardName}" 게시판을 삭제하시겠습니까?`,
+      title: `"${board.name}" 게시판을 삭제하시겠습니까?`,
       description: '게시판의 모든 게시글이 삭제됩니다.',
       variant: 'destructive',
       confirmText: '삭제',
@@ -137,21 +173,25 @@ export default function BoardsPage() {
     if (!ok) return;
 
     try {
-      const response = await boardApi.delete(Number(clubId), boardId);
+      const response = await boardApi.delete(Number(clubId), board.boardId);
       if (response.success) {
-        setBoards(boards.filter((b) => b.boardId !== boardId));
+        const remaining = boards.filter((b) => b.boardId !== board.boardId);
+        setBoards(remaining);
+        if (activeBoard?.boardId === board.boardId) {
+          setActiveBoard(remaining[0] || null);
+        }
         toast({ title: '게시판이 삭제되었습니다.', variant: 'success' });
       } else {
-        toast({ title: response.error?.message || '게시판 삭제에 실패했습니다.', variant: 'error' });
+        toast({ title: response.error?.message || '삭제에 실패했습니다.', variant: 'error' });
       }
-    } catch (err) {
-      toast({ title: '게시판 삭제 중 오류가 발생했습니다.', variant: 'error' });
+    } catch {
+      toast({ title: '삭제 중 오류가 발생했습니다.', variant: 'error' });
     }
   };
 
   if (loading) {
     return (
-      <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
+      <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
         <div className="flex items-center justify-center py-20">
           <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
         </div>
@@ -161,8 +201,8 @@ export default function BoardsPage() {
 
   if (error) {
     return (
-      <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
-        <div className="max-w-6xl mx-auto text-center py-20">
+      <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
+        <div className="max-w-4xl mx-auto text-center py-20">
           <p className="text-red-500">{error}</p>
         </div>
       </main>
@@ -170,96 +210,146 @@ export default function BoardsPage() {
   }
 
   return (
-    <main className="pt-28 pb-20 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-12">
-          <div>
-            <h1 className="font-display font-bold text-3xl sm:text-4xl mb-4 text-slate-900">
-              게시판
-            </h1>
-            <p className="text-xl text-slate-600">
-              동아리 멤버들과 소통하세요
-            </p>
-          </div>
+    <main className="pt-24 pb-16 px-4 sm:px-6 lg:px-8 min-h-screen bg-slate-50">
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <Link
+            href={`/clubs/${clubId}`}
+            className="inline-flex items-center gap-1.5 text-sm text-slate-500 hover:text-indigo-600 mb-3 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            {clubName || '동아리'} 홈
+          </Link>
+          <h1 className="font-bold text-2xl text-slate-900">커뮤니티</h1>
+        </div>
+
+        {/* Board Tabs */}
+        <div className="flex items-center gap-1 bg-white rounded-2xl border border-slate-200 p-1.5 mb-6 overflow-x-auto">
+          {boards.map((board) => (
+            <button
+              key={board.boardId}
+              onClick={() => setActiveBoard(board)}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
+                activeBoard?.boardId === board.boardId
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
+              }`}
+            >
+              {boardTypeIcon[board.boardType] || <MessageSquare className="w-4 h-4" />}
+              {board.name}
+              <span className={`text-xs px-1.5 py-0.5 rounded-full ${
+                activeBoard?.boardId === board.boardId ? 'bg-white/20' : 'bg-slate-100'
+              }`}>
+                {board.postCount}
+              </span>
+            </button>
+          ))}
           {isAdmin && (
-            <Button onClick={() => setShowCreateModal(true)} className="gap-2">
-              <PlusCircle className="w-5 h-5" />
-              게시판 만들기
-            </Button>
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-sm text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 transition-all whitespace-nowrap"
+            >
+              <PlusCircle className="w-4 h-4" />
+              추가
+            </button>
           )}
         </div>
 
-        {boards.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl border border-slate-200">
-            <MessageSquare className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <h3 className="font-display font-bold text-xl text-slate-900 mb-2">
-              아직 게시판이 없습니다
-            </h3>
-            <p className="text-slate-600">
-              관리자가 게시판을 생성하면 여기에 표시됩니다
-            </p>
-          </div>
-        ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {boards.map((board, index) => (
-              <motion.div
-                key={board.boardId}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="relative"
-              >
-                <Link href={`/clubs/${clubId}/boards/${board.boardId}`}>
-                  <div className="club bg-white rounded-2xl p-6 hover:shadow-soft-lg transition-all duration-300 border border-slate-200 hover:border-indigo-200 h-full">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="text-4xl">{boardIcons[board.boardType] || boardIcons.DEFAULT}</div>
-                      <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center club-hover:bg-gradient-to-br club-hover:from-indigo-500 club-hover:to-violet-500 club-hover:scale-110 transition-all">
-                        <MessageSquare className="w-5 h-5 text-indigo-600 club-hover:text-white transition-colors" />
-                      </div>
-                    </div>
-
-                    <h3 className="font-display font-bold text-2xl text-slate-900 mb-2 club-hover:text-indigo-600 transition-colors">
-                      {board.name}
-                    </h3>
-                    <p className="text-slate-600 mb-4 text-sm">
-                      {board.description}
-                    </p>
-
-                    <div className="flex items-center gap-4 text-sm text-slate-500 pt-4 border-t border-slate-200">
-                      <div className="flex items-center gap-1">
-                        <MessageSquare className="w-4 h-4" />
-                        <span>{board.postCount}개의 글</span>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
+        {/* Active Board Content */}
+        {activeBoard ? (
+          <motion.div
+            key={activeBoard.boardId}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.2 }}
+            className="bg-white rounded-2xl border border-slate-200 overflow-hidden"
+          >
+            {/* Board header */}
+            <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <h2 className="font-semibold text-slate-900">{activeBoard.name}</h2>
                 {isAdmin && (
                   <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      handleDeleteBoard(board.boardId, board.name);
-                    }}
-                    className="absolute top-3 right-3 p-2 bg-white/90 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all opacity-0 hover:opacity-100 focus:opacity-100 z-10 border border-slate-200"
+                    onClick={() => handleDeleteBoard(activeBoard)}
+                    className="text-slate-300 hover:text-red-500 transition-colors"
                     title="게시판 삭제"
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 )}
-              </motion.div>
-            ))}
+              </div>
+              <Link href={`/clubs/${clubId}/boards/${activeBoard.boardId}/posts/new`}>
+                <Button size="sm" className="gap-1.5 text-xs">
+                  <PenSquare className="w-3.5 h-3.5" />
+                  글쓰기
+                </Button>
+              </Link>
+            </div>
+
+            {/* Posts */}
+            {postsLoading ? (
+              <div className="py-16 text-center">
+                <Loader2 className="w-6 h-6 animate-spin text-indigo-600 mx-auto" />
+              </div>
+            ) : posts.length === 0 ? (
+              <div className="py-16 text-center">
+                <MessageSquare className="w-10 h-10 text-slate-200 mx-auto mb-3" />
+                <p className="text-slate-500 mb-3">아직 작성된 글이 없습니다</p>
+                <Link href={`/clubs/${clubId}/boards/${activeBoard.boardId}/posts/new`}>
+                  <Button size="sm" variant="secondary" className="gap-1.5">
+                    <PenSquare className="w-3.5 h-3.5" />
+                    첫 글을 작성해보세요
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="divide-y divide-slate-100">
+                {posts.map((post) => (
+                  <Link
+                    key={post.postId}
+                    href={`/clubs/${clubId}/boards/${activeBoard.boardId}/posts/${post.postId}`}
+                    className="flex items-center gap-3 px-5 py-4 hover:bg-slate-50 transition-colors group"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-1">
+                        {post.isPinned && (
+                          <span className="flex items-center gap-0.5 text-indigo-600 text-xs font-medium">
+                            <Pin className="w-3 h-3" /> 고정
+                          </span>
+                        )}
+                        {post.isNotice && (
+                          <span className="px-1.5 py-0.5 bg-red-100 text-red-600 text-xs rounded font-medium">
+                            공지
+                          </span>
+                        )}
+                        <h3 className="text-sm font-medium text-slate-900 truncate group-hover:text-indigo-600 transition-colors">
+                          {post.title}
+                        </h3>
+                      </div>
+                      <div className="flex items-center gap-3 text-xs text-slate-400">
+                        <span className="flex items-center gap-1">
+                          <User className="w-3 h-3" />
+                          {post.authorName}
+                        </span>
+                        <span>{new Date(post.createdAt).toLocaleDateString('ko-KR')}</span>
+                      </div>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-400 flex-shrink-0" />
+                  </Link>
+                ))}
+              </div>
+            )}
+          </motion.div>
+        ) : (
+          <div className="text-center py-20 bg-white rounded-2xl border border-slate-200">
+            <MessageSquare className="w-12 h-12 text-slate-200 mx-auto mb-3" />
+            <h3 className="font-semibold text-lg text-slate-900 mb-1">게시판이 없습니다</h3>
+            <p className="text-sm text-slate-500">
+              {isAdmin ? '게시판을 추가해 주세요.' : '관리자가 게시판을 생성하면 여기에 표시됩니다.'}
+            </p>
           </div>
         )}
-
-        <div className="mt-12 bg-gradient-to-r from-indigo-50 to-violet-50 rounded-2xl p-8 text-center border border-indigo-100">
-          <Pin className="w-12 h-12 text-indigo-600 mx-auto mb-4" />
-          <h3 className="font-display font-bold text-xl text-slate-900 mb-2">
-            멤버 전용 공간입니다
-          </h3>
-          <p className="text-slate-600">
-            동아리 멤버만 게시판을 이용할 수 있습니다
-          </p>
-        </div>
       </div>
 
       {/* Create Board Modal */}
@@ -330,8 +420,8 @@ export default function BoardsPage() {
                   }
                   className="w-full px-4 py-2.5 border border-slate-200 rounded-lg focus:outline-none focus:border-indigo-600 text-sm bg-white"
                 >
-                  <option value="CLUB_ONLY">멤버만 (CLUB_ONLY)</option>
-                  <option value="PUBLIC">전체 공개 (PUBLIC)</option>
+                  <option value="CLUB_ONLY">멤버만</option>
+                  <option value="PUBLIC">전체 공개</option>
                 </select>
               </div>
 
@@ -344,11 +434,7 @@ export default function BoardsPage() {
                 >
                   취소
                 </Button>
-                <Button
-                  type="submit"
-                  disabled={creating}
-                  className="flex-1"
-                >
+                <Button type="submit" disabled={creating} className="flex-1">
                   {creating ? '생성 중...' : '만들기'}
                 </Button>
               </div>
