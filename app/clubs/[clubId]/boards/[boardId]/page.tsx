@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { MessageSquare, User, Calendar, Eye, Pin, PlusCircle, Search, Loader2 } from 'lucide-react';
+import { MessageSquare, User, Calendar, Pin, PlusCircle, Search, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { boardApi, postApi } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -12,9 +12,8 @@ interface Post {
   postId: number;
   title: string;
   content: string;
-  author: { name: string };
+  authorName: string;
   createdAt: string;
-  views: number;
   isPinned: boolean;
   isNotice: boolean;
 }
@@ -50,7 +49,8 @@ export default function BoardDetailPage() {
         }
 
         if (postsRes.success && postsRes.data) {
-          setPosts(postsRes.data.content || []);
+          const data = postsRes.data as any;
+          setPosts(Array.isArray(data) ? data : data.content || []);
         }
       } catch (err) {
         setError('데이터를 불러오는 중 오류가 발생했습니다.');
@@ -150,15 +150,11 @@ export default function BoardDetailPage() {
                       <div className="flex items-center gap-4 text-xs text-slate-500">
                         <div className="flex items-center gap-1">
                           <User className="w-3 h-3" />
-                          <span>{post.author.name}</span>
+                          <span>{post.authorName}</span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           <span>{new Date(post.createdAt).toLocaleDateString()}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Eye className="w-3 h-3" />
-                          <span>{post.views}</span>
                         </div>
                       </div>
                     </div>
