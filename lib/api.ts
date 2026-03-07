@@ -1,5 +1,6 @@
 // API 기본 설정
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://uniclub-alb-573632097.ap-northeast-2.elb.amazonaws.com/api'
+// 'http://localhost:8080/api'
 
 // API 응답 타입
 export interface ApiResponse<T> {
